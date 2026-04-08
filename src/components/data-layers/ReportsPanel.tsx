@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { fetch311Issues, getStatusColor, type ServiceRequest } from '../../services/api/seeclickfix';
-import { LoadingSpinner } from '../shared/LoadingSpinner';
+import { SkeletonFeed } from '../shared/Skeleton';
 
 export function ReportsPanel() {
   const [issues, setIssues] = useState<ServiceRequest[]>([]);
@@ -24,7 +24,7 @@ export function ReportsPanel() {
     return () => { cancelled = true; };
   }, []);
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <SkeletonFeed />;
   if (error) return <div className="p-3 text-sm text-danger">{error}</div>;
 
   const openCount = issues.filter((i) => i.status === 'open').length;

@@ -1,11 +1,11 @@
 import { useWaterLevels } from '../../hooks/useWaterLevels';
 import { getWaterLevelStatus } from '../../services/api/water';
-import { LoadingSpinner } from '../shared/LoadingSpinner';
+import { SkeletonGauges } from '../shared/Skeleton';
 
 export function WaterLevelsPanel() {
   const { gauges, loading, error } = useWaterLevels();
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <SkeletonGauges />;
   if (error) return <div className="p-3 text-sm text-danger">{error}</div>;
 
   if (gauges.length === 0) {

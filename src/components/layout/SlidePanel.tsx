@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
+import { motion } from 'framer-motion';
 import { useAppState } from '../../hooks/useAppState';
+import { slideInRight } from '../../lib/motion';
 import { MunicipalityProfile } from '../municipalities/MunicipalityProfile';
 import { MunicipalityCompare } from '../municipalities/MunicipalityCompare';
 import { WeatherPanel } from '../data-layers/WeatherPanel';
@@ -40,7 +42,12 @@ export function SlidePanel({ rewards }: Props) {
   const title = PANEL_TITLES[state.slidePanelContent] || 'Details';
 
   return (
-    <div className="flex h-full w-96 flex-shrink-0 flex-col border-l border-border bg-bg animate-slide-in">
+    <motion.div
+      variants={slideInRight}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      className="flex h-full w-96 flex-shrink-0 flex-col border-l border-border bg-bg">
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <h2 className="text-sm font-semibold text-text">{title}</h2>
         <button
@@ -58,7 +65,7 @@ export function SlidePanel({ rewards }: Props) {
           <PanelContent type={state.slidePanelContent} rewards={rewards} />
         </ErrorBoundary>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

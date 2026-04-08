@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { fetchTrafficIncidents, type TrafficIncident } from '../../services/api/traffic';
-import { LoadingSpinner } from '../shared/LoadingSpinner';
+import { SkeletonFeed } from '../shared/Skeleton';
 
 export function TrafficPanel() {
   const [incidents, setIncidents] = useState<TrafficIncident[]>([]);
@@ -25,7 +25,7 @@ export function TrafficPanel() {
     return () => { cancelled = true; clearInterval(interval); };
   }, []);
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <SkeletonFeed />;
   if (error) return <div className="p-3 text-sm text-danger">{error}</div>;
 
   return (
