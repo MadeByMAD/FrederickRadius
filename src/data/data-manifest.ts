@@ -194,7 +194,17 @@ export const dataManifest = {
   // ==========================================
   water: {
     base: 'https://waterservices.usgs.gov/nwis/iv/',
-    gauges: ['01642190', '01643000', '01643500', '01639000'],
+    gauges: [
+      '01637500', // Catoctin Creek near Middletown
+      '01638500', // Potomac River at Point of Rocks
+      '01639000', // Monocacy River at Bridgeport
+      '01642190', // Monocacy River at Monocacy Blvd
+      '01642198', // Carroll Creek near Frederick
+      '01642600', // Linganore Creek near Frederick
+      '01643000', // Monocacy River at Jug Bridge
+      '01643500', // Bennett Creek at Park Mills
+      '01643580', // Monocacy River near Dickerson
+    ],
   },
 
   // ==========================================
@@ -254,8 +264,14 @@ export const dataManifest = {
   // ==========================================
   census: {
     acs5: 'https://api.census.gov/data/2023/acs/acs5',
+    cbp: 'https://api.census.gov/data/2022/cbp', // County Business Patterns
+    dec2020: 'https://api.census.gov/data/2020/dec/pl', // Decennial
+    tiger: 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/',
     state: '24',
     county: '021',
+    // Key variables: B01003_001E (pop), B19013_001E (median income),
+    // B25077_001E (home value), B01002_001E (median age), B25001_001E (housing units)
+    // Frederick County 2023: Pop=280,341 | Income=$120,458 | Home=$437,700 | Age=38.9
   },
 
   // ==========================================
@@ -288,5 +304,85 @@ export const dataManifest = {
       emergencies: '?ModID=63&CID=City-Emergencies-4',
       jobs: '?ModID=66&CID=FullTime-95',
     },
+  },
+
+  // ==========================================
+  // FEMA (No API key needed)
+  // ==========================================
+  fema: {
+    disasters: 'https://www.fema.gov/api/open/v2/DisasterDeclarationsSummaries?$filter=state eq \'MD\' and designatedArea eq \'Frederick (County)\'&$top=100',
+    floodHazard: 'https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer',
+    // 23 disaster declarations for Frederick County (1971-2026)
+  },
+
+  // ==========================================
+  // BLS EMPLOYMENT (Free key optional)
+  // ==========================================
+  bls: {
+    base: 'https://api.bls.gov/publicAPI/v2/timeseries/data/',
+    series: {
+      unemploymentRate: 'LAUCN240210000000003',
+      unemployedPersons: 'LAUCN240210000000004',
+      employedPersons: 'LAUCN240210000000005',
+      laborForce: 'LAUCN240210000000006',
+    },
+  },
+
+  // ==========================================
+  // FBI CRIME DATA (Free API key required)
+  // ==========================================
+  fbi: {
+    base: 'https://api.usa.gov/crime/fbi/sapi/',
+    // Requires key from https://api.data.gov/signup/
+  },
+
+  // ==========================================
+  // USDA FOOD ACCESS / SNAP
+  // ==========================================
+  usda: {
+    foodAccess: 'https://gisportal.ers.usda.gov/server/rest/services/FARA/FARA_2019/MapServer',
+    snapBenefits: 'https://gisportal.ers.usda.gov/server/rest/services/SNAP/SNAP_Benefits/MapServer',
+    soilData: 'https://SDMDataAccess.sc.egov.usda.gov/Tabular/post.rest',
+  },
+
+  // ==========================================
+  // HUD HOUSING (Free key required)
+  // ==========================================
+  hud: {
+    fairMarketRents: 'https://www.huduser.gov/hudapi/public/fmr/data/24021',
+    incomeLimits: 'https://www.huduser.gov/hudapi/public/il/data/24021',
+  },
+
+  // ==========================================
+  // NOAA CLIMATE (Free key required for CDO)
+  // ==========================================
+  noaa: {
+    climateData: 'https://www.ncei.noaa.gov/cdo-web/api/v2/data?locationid=FIPS:24021',
+    stormEvents: 'https://www.ncei.noaa.gov/stormevents/',
+  },
+
+  // ==========================================
+  // USASPENDING (No key needed)
+  // ==========================================
+  usaspending: {
+    base: 'https://api.usaspending.gov/api/v2/',
+    // POST to /search/spending_by_geography/ with county FIPS 24021
+  },
+
+  // ==========================================
+  // KEY IDENTIFIERS
+  // ==========================================
+  identifiers: {
+    fips: '24021',
+    state: '24',
+    county: '021',
+    nwsGrid: 'LWX/81,93',
+    nwsCountyZone: 'MDC021',
+    nwsForecastZone: 'MDZ004',
+    radar: 'KLWX',
+    femadfirm: '24021C',
+    blsPrefix: 'LAUCN24021000000000',
+    airport: 'KFDK',
+    centroid: { lat: 39.4721, lng: -77.3980 },
   },
 } as const;

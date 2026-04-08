@@ -2,12 +2,17 @@ import type { WaterGauge } from '../../types';
 
 const BASE_URL = 'https://waterservices.usgs.gov/nwis/iv/';
 
-// Known Frederick County gauges
+// All 9 active USGS gauges in Frederick County
 const GAUGE_SITES = [
-  '01642190', // Monocacy River at Monocacy Blvd near Frederick
-  '01643000', // Monocacy River at Jug Bridge near Frederick
+  '01637500', // Catoctin Creek near Middletown
+  '01638500', // Potomac River at Point of Rocks
+  '01639000', // Monocacy River at Bridgeport
+  '01642190', // Monocacy River at Monocacy Blvd
+  '01642198', // Carroll Creek near Frederick
+  '01642600', // Linganore Creek near Frederick
+  '01643000', // Monocacy River at Jug Bridge
   '01643500', // Bennett Creek at Park Mills
-  '01639000', // Catoctin Creek near Middletown
+  '01643580', // Monocacy River near Dickerson
 ];
 
 let gaugeCache: { data: WaterGauge[]; timestamp: number } | null = null;
