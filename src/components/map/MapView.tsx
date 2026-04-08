@@ -197,6 +197,17 @@ export function MapView() {
         }
       });
 
+      // ── Right-click / long-press for Address Intelligence ──
+      map.on('contextmenu', (e) => {
+        const { lng, lat } = e.lngLat;
+        dispatch({
+          type: 'ADDRESS_INTEL',
+          lat,
+          lng,
+          address: `${lat.toFixed(5)}, ${lng.toFixed(5)} (Frederick County)`,
+        });
+      });
+
       // ── Load Live Data Overlays ──
       loadLiveOverlays(map);
 

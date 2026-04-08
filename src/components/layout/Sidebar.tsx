@@ -7,9 +7,10 @@ import { SearchBar } from './SearchBar';
 interface Props {
   onOpenPanel: (content: 'weather' | 'water' | 'civic' | 'rewards' | 'traffic' | 'reports' | 'parking' | 'compare') => void;
   points: number;
+  onStartTour?: () => void;
 }
 
-export function Sidebar({ onOpenPanel, points }: Props) {
+export function Sidebar({ onOpenPanel, points, onStartTour }: Props) {
   const { state, dispatch } = useAppState();
 
   return (
@@ -88,8 +89,18 @@ export function Sidebar({ onOpenPanel, points }: Props) {
       </div>
 
       {/* Footer */}
-      <div className="flex-shrink-0 border-t border-border px-4 py-2 text-center text-[10px] text-text-muted">
-        Data: Frederick County GIS, NWS, USGS, Census Bureau
+      <div className="flex-shrink-0 border-t border-border px-4 py-2">
+        {onStartTour && (
+          <button
+            onClick={onStartTour}
+            className="w-full mb-2 flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-accent/10 to-success/10 border border-accent/20 px-3 py-2 text-xs font-medium text-accent hover:from-accent/20 hover:to-success/20 transition-all"
+          >
+            <span>🧭</span> Take a Tour of Frederick County
+          </button>
+        )}
+        <div className="text-center text-[10px] text-text-muted">
+          500+ data sources · Frederick County GIS, NWS, USGS, Census, CHART
+        </div>
       </div>
     </div>
   );
