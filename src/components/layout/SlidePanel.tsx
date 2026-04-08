@@ -3,6 +3,9 @@ import { useAppState } from '../../hooks/useAppState';
 import { MunicipalityProfile } from '../municipalities/MunicipalityProfile';
 import { WeatherPanel } from '../data-layers/WeatherPanel';
 import { WaterLevelsPanel } from '../data-layers/WaterLevelsPanel';
+import { TrafficPanel } from '../data-layers/TrafficPanel';
+import { ReportsPanel } from '../data-layers/ReportsPanel';
+import { ParkingPanel } from '../data-layers/ParkingPanel';
 import { MeetingCalendar } from '../civic/MeetingCalendar';
 import { RepresentativesPanel } from '../civic/RepresentativeCard';
 import { RewardsPanel } from '../rewards/RewardsPanel';
@@ -13,6 +16,9 @@ const PANEL_TITLES: Record<string, string> = {
   municipality: 'Municipality',
   weather: 'Weather',
   water: 'Water Levels',
+  traffic: 'Traffic',
+  reports: '311 Service Requests',
+  parking: 'Parking',
   civic: 'Civic',
   rewards: 'Rewards',
   search: 'Search Results',
@@ -31,7 +37,6 @@ export function SlidePanel({ rewards }: Props) {
 
   return (
     <div className="flex h-full w-96 flex-shrink-0 flex-col border-l border-border bg-bg animate-slide-in">
-      {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <h2 className="text-sm font-semibold text-text">{title}</h2>
         <button
@@ -44,7 +49,6 @@ export function SlidePanel({ rewards }: Props) {
         </button>
       </div>
 
-      {/* Content */}
       <div className="flex-1 overflow-y-auto p-4">
         <ErrorBoundary>
           <PanelContent type={state.slidePanelContent} rewards={rewards} />
@@ -62,6 +66,12 @@ function PanelContent({ type, rewards }: { type: string; rewards: RewardsState }
       return <WeatherPanel />;
     case 'water':
       return <WaterLevelsPanel />;
+    case 'traffic':
+      return <TrafficPanel />;
+    case 'reports':
+      return <ReportsPanel />;
+    case 'parking':
+      return <ParkingPanel />;
     case 'civic':
       return <CivicContent />;
     case 'rewards':

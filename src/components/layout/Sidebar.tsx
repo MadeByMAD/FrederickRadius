@@ -5,7 +5,7 @@ import { MapControls } from '../map/MapControls';
 import { SearchBar } from './SearchBar';
 
 interface Props {
-  onOpenPanel: (content: 'weather' | 'water' | 'civic' | 'rewards') => void;
+  onOpenPanel: (content: 'weather' | 'water' | 'civic' | 'rewards' | 'traffic' | 'reports' | 'parking') => void;
   points: number;
 }
 
@@ -49,8 +49,17 @@ export function Sidebar({ onOpenPanel, points }: Props) {
         <div className="grid grid-cols-4 gap-1.5">
           <QuickAction icon="🌤️" label="Weather" onClick={() => onOpenPanel('weather')} />
           <QuickAction icon="💧" label="Water" onClick={() => onOpenPanel('water')} />
+          <QuickAction icon="🚗" label="Traffic" onClick={() => onOpenPanel('traffic')} />
           <QuickAction icon="🏛️" label="Civic" onClick={() => onOpenPanel('civic')} />
+        </div>
+        <div className="mt-1.5 grid grid-cols-4 gap-1.5">
+          <QuickAction icon="📢" label="311" onClick={() => onOpenPanel('reports')} />
+          <QuickAction icon="🅿️" label="Parking" onClick={() => onOpenPanel('parking')} />
           <QuickAction icon="⭐" label="Rewards" onClick={() => onOpenPanel('rewards')} />
+          <QuickAction icon="📊" label="Layers" onClick={() => {
+            const el = document.getElementById('layer-controls');
+            el?.scrollIntoView({ behavior: 'smooth' });
+          }} />
         </div>
       </div>
 
@@ -74,7 +83,7 @@ export function Sidebar({ onOpenPanel, points }: Props) {
         </div>
 
         {/* Layer Controls */}
-        <div className="border-t border-border p-3">
+        <div id="layer-controls" className="border-t border-border p-3">
           <MapControls />
         </div>
       </div>

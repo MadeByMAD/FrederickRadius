@@ -70,7 +70,7 @@ export interface MapLayer {
   id: string;
   name: string;
   icon: string;
-  category: 'safety' | 'facilities' | 'environment' | 'transportation' | 'planning';
+  category: 'safety' | 'facilities' | 'schools' | 'parks' | 'environment' | 'transportation' | 'planning' | 'historic' | 'elections' | 'utilities';
   visible: boolean;
   color: string;
   endpoint: string;
@@ -134,7 +134,7 @@ export interface AppState {
   activeLayers: string[];
   sidebarOpen: boolean;
   slidePanelOpen: boolean;
-  slidePanelContent: 'municipality' | 'search' | 'civic' | 'rewards' | 'weather' | 'water' | null;
+  slidePanelContent: 'municipality' | 'search' | 'civic' | 'rewards' | 'weather' | 'water' | 'traffic' | 'reports' | 'parking' | null;
   searchQuery: string;
 }
 

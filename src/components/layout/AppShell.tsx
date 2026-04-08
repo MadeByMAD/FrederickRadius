@@ -9,7 +9,7 @@ export function AppShell() {
   const { state, dispatch } = useAppState();
   const { rewards, visitMunicipality, earnBadge } = useRewards();
 
-  const handleOpenPanel = (content: 'weather' | 'water' | 'civic' | 'rewards') => {
+  const handleOpenPanel = (content: 'weather' | 'water' | 'civic' | 'rewards' | 'traffic' | 'reports' | 'parking') => {
     dispatch({ type: 'OPEN_PANEL', content });
     if (content === 'weather') earnBadge('weather-watcher');
     if (content === 'water') earnBadge('water-monitor');
