@@ -233,19 +233,101 @@ export const dataManifest = {
   // MARYLAND STATE DATA (Socrata / SODA API)
   // ==========================================
   marylandOpenData: {
+    // Property & Development
     propertyAssessments: 'https://opendata.maryland.gov/resource/gx8c-a963.json',
     cityPermits: 'https://opendata.maryland.gov/resource/xrz3-9xhj.json',
     codeViolations: 'https://opendata.maryland.gov/resource/fqwk-5r78.json',
+    // Crime (1975-present, no key)
+    crimeByCounty: 'https://opendata.maryland.gov/resource/jwfa-fdxs.json',
+    crimeByMunicipality: 'https://opendata.maryland.gov/resource/2p5g-xrcb.json',
+    // Health
     covidByCounty: 'https://opendata.maryland.gov/resource/tm86-dujs.json',
+    overdoseDeaths: 'https://opendata.maryland.gov/resource/7zt7-r3mk.json',
+    // Education
+    compareCountiesEducation: 'https://opendata.maryland.gov/resource/63pe-mygy.json',
+    schoolEnrollmentTrends: 'https://opendata.maryland.gov/resource/9ju3-j8k6.json',
+    // Employment
+    employmentByNAICS: 'https://opendata.maryland.gov/resource/hfcr-yjui.json',
+    // Geology
+    geologicFormations: 'https://opendata.maryland.gov/resource/3gdg-5gqr.json',
+    geologicContacts: 'https://opendata.maryland.gov/resource/7x8t-qb4u.json',
+    // Transit
+    transitRoutesSocrata: 'https://opendata.maryland.gov/resource/2xca-jw6k.json',
+    transitStopsSocrata: 'https://opendata.maryland.gov/resource/79ua-svwj.json',
+    // Environment (MDE)
+    wsaCompliance: 'https://opendata.maryland.gov/resource/hxmu-urvx.json',
+    wsaComplaints: 'https://opendata.maryland.gov/resource/cnkn-n3pr.json',
+    wsaViolations: 'https://opendata.maryland.gov/resource/jwx7-mgcz.json',
+    dischargePermitsNoncompliance: 'https://opendata.maryland.gov/resource/cvuy-zwt6.json',
+    envJusticeScreening: 'https://opendata.maryland.gov/resource/qa85-tv68.json',
   },
 
   // ==========================================
-  // MARYLAND STATE GIS
+  // MARYLAND STATE GIS (iMAP — 120+ services)
+  // Base: https://mdgeodata.md.gov/imap/rest/services
   // ==========================================
   marylandGIS: {
-    transitStops: 'https://mdgeodata.md.gov/imap/rest/services/Transportation/MD_LocalTransit/FeatureServer/16',
-    transitRoutes: 'https://mdgeodata.md.gov/imap/rest/services/Transportation/MD_LocalTransit/FeatureServer/17',
-    parcelBoundaries: 'https://geodata.md.gov/imap/rest/services/PlanningCadastre/MD_ParcelBoundaries/MapServer',
+    base: 'https://mdgeodata.md.gov/imap/rest/services',
+    // Transportation
+    transitStops: '/Transportation/MD_LocalTransit/FeatureServer/16',
+    transitRoutes: '/Transportation/MD_LocalTransit/FeatureServer/17',
+    trafficCameras: '/Transportation/MD_TrafficCameras/FeatureServer',
+    altFuelStations: '/Transportation/MD_AlternativeFuel/FeatureServer',
+    parkAndRide: '/Transportation/MD_MDOTSHAParkandRideFacilities/FeatureServer',
+    aadt: '/Transportation/MD_AnnualAverageDailyTraffic/FeatureServer',
+    // Boundaries
+    politicalBoundaries: '/Boundaries/MD_PoliticalBoundaries/FeatureServer',
+    electionBoundaries: '/Boundaries/MD_ElectionBoundaries/FeatureServer',
+    // Planning
+    parcelBoundaries: '/PlanningCadastre/MD_ParcelBoundaries/MapServer',
+    buildingFootprints: '/PlanningCadastre/MD_BuildingFootprints/MapServer',
+    landUseLandCover: '/PlanningCadastre/MD_LandUseLandCover/MapServer',
+    priorityFundingAreas: '/PlanningCadastre/MD_PriorityFundingAreas/FeatureServer',
+    // Public Safety
+    policeStations: '/PublicSafety/MD_Police/FeatureServer',
+    fireStations: '/PublicSafety/MD_Fire/FeatureServer',
+    emsStations: '/PublicSafety/MD_EMS/FeatureServer',
+    // Health
+    hospitals: '/Health/MD_Hospitals/FeatureServer',
+    assistedLiving: '/Health/MD_LongTermCareAssistedLiving/FeatureServer',
+    vitalStatistics: '/Health/MD_VitalStatistics/FeatureServer',
+    // Environment
+    protectedLands: '/Environment/MD_ProtectedLands/FeatureServer',
+    enviroScreen: '/Environment/MD_EnviroScreen/FeatureServer',
+    climateVulnerability: '/Environment/MD_Climate_Vulnerability_Score/FeatureServer',
+    // Hydrology
+    streamHealth: '/Hydrology/MD_StreamHealth/FeatureServer',
+    floodplain: '/Hydrology/MD_Floodplain/FeatureServer',
+    gauges: '/Hydrology/MD_Gauges/FeatureServer',
+    // Biota
+    greenInfrastructure: '/Biota/MD_GreenInfrastructure/FeatureServer',
+    biodiversity: '/Biota/MD_BiodiversityConservationNetwork/FeatureServer',
+    // Education
+    educationFacilities: '/Education/MD_EducationFacilities/FeatureServer',
+    libraries: '/Education/MD_Libraries/FeatureServer',
+    // Business
+    localBusinesses: '/BusinessEconomy/MD_LocalBusinesses/FeatureServer',
+    incentiveZones: '/BusinessEconomy/MD_IncentiveZones/FeatureServer',
+    // Historic
+    historicProperties: '/Historic/MD_InventoryHistoricProperties/FeatureServer',
+    nationalRegister: '/Historic/MD_NationalRegisterHistoricPlaces/FeatureServer',
+    // Demographics
+    acs: '/Demographics/MD_AmericanCommunitySurvey/FeatureServer',
+    censusBoundaries: '/Demographics/MD_CensusBoundaries/MapServer',
+    // Recreation
+    recreationalUses: '/Society/MD_RecreationalUses/FeatureServer',
+    // Broadband
+    broadbandProviders: '/UtilityTelecom/MD_BroadbandProviderPerCensusBlock/MapServer',
+  },
+
+  // ==========================================
+  // MARC TRAIN REAL-TIME (No key needed)
+  // ==========================================
+  marc: {
+    gtfsStatic: 'https://feeds.mta.maryland.gov/gtfs/marc',
+    gtfsRtTripUpdates: 'https://mdotmta-gtfs-rt.s3.amazonaws.com/MARC+RT/marc-tu.pb',
+    gtfsRtVehiclePositions: 'https://mdotmta-gtfs-rt.s3.amazonaws.com/MARC+RT/marc-vp.pb',
+    serviceAlerts: 'https://feeds.mta.maryland.gov/alerts.pb',
   },
 
   // ==========================================
