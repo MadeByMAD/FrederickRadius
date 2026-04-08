@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { useAppState } from '../../hooks/useAppState';
 import { MunicipalityProfile } from '../municipalities/MunicipalityProfile';
+import { MunicipalityCompare } from '../municipalities/MunicipalityCompare';
 import { WeatherPanel } from '../data-layers/WeatherPanel';
 import { WaterLevelsPanel } from '../data-layers/WaterLevelsPanel';
 import { TrafficPanel } from '../data-layers/TrafficPanel';
@@ -9,6 +10,7 @@ import { ParkingPanel } from '../data-layers/ParkingPanel';
 import { MeetingCalendar } from '../civic/MeetingCalendar';
 import { RepresentativesPanel } from '../civic/RepresentativeCard';
 import { RewardsPanel } from '../rewards/RewardsPanel';
+import { AddressIntelligencePanel } from '../shared/AddressIntelligencePanel';
 import { ErrorBoundary } from '../shared/ErrorBoundary';
 import type { RewardsState } from '../../types';
 
@@ -21,6 +23,8 @@ const PANEL_TITLES: Record<string, string> = {
   parking: 'Parking',
   civic: 'Civic',
   rewards: 'Rewards',
+  compare: 'Compare Municipalities',
+  'address-intel': 'Address Intelligence',
   search: 'Search Results',
 };
 
@@ -59,6 +63,8 @@ export function SlidePanel({ rewards }: Props) {
 }
 
 function PanelContent({ type, rewards }: { type: string; rewards: RewardsState }): ReactNode {
+  const { state } = useAppState();
+
   switch (type) {
     case 'municipality':
       return <MunicipalityProfile />;
@@ -74,8 +80,18 @@ function PanelContent({ type, rewards }: { type: string; rewards: RewardsState }
       return <ParkingPanel />;
     case 'civic':
       return <CivicContent />;
+    case 'compare':
+      return <MunicipalityCompare />;
     case 'rewards':
       return <RewardsPanel rewards={rewards} />;
+    case 'address-intel':
+      return state.addressIntel ? (
+        <AddressIntelligencePanel
+          lat={state.addressIntel.lat}
+          lng={state.addressIntel.lng}
+          address={state.addressIntel.address}
+        />
+      ) : <div className="text-sm text-text-secondary">Search for an address to see intelligence</div>;
     default:
       return <div className="text-sm text-text-secondary">Select an item to view details</div>;
   }

@@ -39,6 +39,13 @@ export function SearchBar() {
     setQuery(name.split(',')[0]);
     const flyTo = (window as unknown as Record<string, (lng: number, lat: number, zoom?: number) => void>).__mapFlyTo;
     if (flyTo) flyTo(parseFloat(lon), parseFloat(lat), 15);
+    // Trigger Address Intelligence
+    dispatch({
+      type: 'ADDRESS_INTEL',
+      lat: parseFloat(lat),
+      lng: parseFloat(lon),
+      address: name,
+    });
   }
 
   function handleMunicipalitySelect(id: string) {

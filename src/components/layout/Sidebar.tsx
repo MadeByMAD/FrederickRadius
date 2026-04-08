@@ -5,7 +5,7 @@ import { MapControls } from '../map/MapControls';
 import { SearchBar } from './SearchBar';
 
 interface Props {
-  onOpenPanel: (content: 'weather' | 'water' | 'civic' | 'rewards' | 'traffic' | 'reports' | 'parking') => void;
+  onOpenPanel: (content: 'weather' | 'water' | 'civic' | 'rewards' | 'traffic' | 'reports' | 'parking' | 'compare') => void;
   points: number;
 }
 
@@ -46,15 +46,14 @@ export function Sidebar({ onOpenPanel, points }: Props) {
 
       {/* Quick Actions */}
       <div className="flex-shrink-0 border-b border-border p-3">
-        <div className="grid grid-cols-4 gap-1.5">
+        <div className="grid grid-cols-3 gap-1.5">
           <QuickAction icon="🌤️" label="Weather" onClick={() => onOpenPanel('weather')} />
           <QuickAction icon="💧" label="Water" onClick={() => onOpenPanel('water')} />
           <QuickAction icon="🚗" label="Traffic" onClick={() => onOpenPanel('traffic')} />
           <QuickAction icon="🏛️" label="Civic" onClick={() => onOpenPanel('civic')} />
-        </div>
-        <div className="mt-1.5 grid grid-cols-4 gap-1.5">
           <QuickAction icon="📢" label="311" onClick={() => onOpenPanel('reports')} />
           <QuickAction icon="🅿️" label="Parking" onClick={() => onOpenPanel('parking')} />
+          <QuickAction icon="⚔️" label="Compare" onClick={() => onOpenPanel('compare')} />
           <QuickAction icon="⭐" label="Rewards" onClick={() => onOpenPanel('rewards')} />
           <QuickAction icon="📊" label="Layers" onClick={() => {
             const el = document.getElementById('layer-controls');

@@ -14,7 +14,8 @@ type AppAction =
   | { type: 'OPEN_PANEL'; content: AppState['slidePanelContent'] }
   | { type: 'CLOSE_PANEL' }
   | { type: 'TOGGLE_LAYER'; layerId: string }
-  | { type: 'SET_SEARCH'; query: string };
+  | { type: 'SET_SEARCH'; query: string }
+  | { type: 'ADDRESS_INTEL'; lat: number; lng: number; address: string };
 
 const initialState: AppState = {
   selectedMunicipality: null,
@@ -48,6 +49,13 @@ function reducer(state: AppState, action: AppAction): AppState {
     }
     case 'SET_SEARCH':
       return { ...state, searchQuery: action.query };
+    case 'ADDRESS_INTEL':
+      return {
+        ...state,
+        slidePanelOpen: true,
+        slidePanelContent: 'address-intel',
+        addressIntel: { lat: action.lat, lng: action.lng, address: action.address },
+      };
     default:
       return state;
   }
