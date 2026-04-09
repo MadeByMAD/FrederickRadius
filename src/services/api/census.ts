@@ -16,6 +16,21 @@ const PLACES_URL = `${TIGERWEB_BASE}/tigerWMS_Current/MapServer/28`;
 
 // Frederick County FIPS = 24021 (State 24, County 021)
 
+const MUNICIPALITY_NAME_MAP: Record<string, string> = {
+  'Frederick': 'frederick',
+  'Thurmont': 'thurmont',
+  'Emmitsburg': 'emmitsburg',
+  'Middletown': 'middletown',
+  'Brunswick': 'brunswick',
+  'Walkersville': 'walkersville',
+  'Myersville': 'myersville',
+  'Woodsboro': 'woodsboro',
+  'New Market': 'new-market',
+  'Mount Airy': 'mount-airy',
+  'Burkittsville': 'burkittsville',
+  'Rosemont': 'rosemont',
+};
+
 let cache: { data: GeoJSONCollection; timestamp: number } | null = null;
 const CACHE_TTL = 60 * 60 * 1000; // 1 hour — boundaries rarely change
 
@@ -28,12 +43,18 @@ export async function fetchMunicipalityBoundaries(): Promise<GeoJSONCollection> 
     return cache.data;
   }
 
-  // Query for all incorporated places within Frederick County
-  // COUNTY field is the 3-digit county FIPS code (021)
-  // STATE field is the 2-digit state FIPS code (24)
+  // The Places layer has no COUNTY field. Use a spatial query with
+  // Frederick County's bounding box and filter by STATE='24'.
+  // The bbox is slightly generous; we filter to our known municipalities after.
+  const FREDERICK_BBOX = '-77.72,39.21,-77.12,39.72';
+
   const params = new URLSearchParams({
-    where: `STATE='24' AND COUNTY='021'`,
-    outFields: 'NAME,BASENAME,FUNCSTAT,AREALAND,AREAWATER,GEOID,LSAD,POP100',
+    where: `STATE='24'`,
+    geometry: FREDERICK_BBOX,
+    geometryType: 'esriGeometryEnvelope',
+    inSR: '4326',
+    spatialRel: 'esriSpatialRelIntersects',
+    outFields: 'NAME,BASENAME,FUNCSTAT,AREALAND,AREAWATER,GEOID,LSADC',
     f: 'geojson',
     outSR: '4326',
     returnGeometry: 'true',
@@ -52,29 +73,26 @@ export async function fetchMunicipalityBoundaries(): Promise<GeoJSONCollection> 
     throw new Error(`TIGERweb error: ${json.error.message}`);
   }
 
-  const data = json as GeoJSONCollection;
+  const raw = json as GeoJSONCollection;
+
+  // Filter to only our known Frederick County municipalities
+  const knownNames = new Set(Object.keys(MUNICIPALITY_NAME_MAP));
+  const data: GeoJSONCollection = {
+    ...raw,
+    features: raw.features.filter((f) => {
+      const basename = (f.properties as Record<string, string>)?.BASENAME;
+      return basename && knownNames.has(basename);
+    }),
+  };
+
   cache = { data, timestamp: Date.now() };
   return data;
 }
 
 /**
  * Match a TIGERweb place name to our municipality ID.
- * TIGERweb uses BASENAME (e.g., "Frederick") and LSAD for type.
+ * TIGERweb uses BASENAME (e.g., "Frederick") and LSADC for type.
  */
 export function matchMunicipalityId(basename: string): string | null {
-  const nameMap: Record<string, string> = {
-    'Frederick': 'frederick',
-    'Thurmont': 'thurmont',
-    'Emmitsburg': 'emmitsburg',
-    'Middletown': 'middletown',
-    'Brunswick': 'brunswick',
-    'Walkersville': 'walkersville',
-    'Myersville': 'myersville',
-    'Woodsboro': 'woodsboro',
-    'New Market': 'new-market',
-    'Mount Airy': 'mount-airy',
-    'Burkittsville': 'burkittsville',
-    'Rosemont': 'rosemont',
-  };
-  return nameMap[basename] ?? null;
+  return MUNICIPALITY_NAME_MAP[basename] ?? null;
 }
