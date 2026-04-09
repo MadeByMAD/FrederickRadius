@@ -6,16 +6,16 @@ export type SnapPoint = 'peek' | 'half' | 'full';
 
 // Heights for each snap point (from bottom of screen)
 const SNAP_HEIGHTS = {
-  peek: 180,   // Search bar + widget strip + explore row
-  half: typeof window !== 'undefined' ? window.innerHeight * 0.55 : 440,
+  peek: 140,   // Search bar + quick-access pills
+  half: typeof window !== 'undefined' ? window.innerHeight * 0.5 : 400,
   full: typeof window !== 'undefined' ? window.innerHeight - 44 : 760,
 };
 
 function getSnapHeights() {
   if (typeof window === 'undefined') return SNAP_HEIGHTS;
   return {
-    peek: 180,
-    half: window.innerHeight * 0.55,
+    peek: 140,
+    half: window.innerHeight * 0.5,
     full: window.innerHeight - 44,
   };
 }

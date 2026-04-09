@@ -1,5 +1,6 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import Map, { Source, Layer, Popup, NavigationControl, ScaleControl, GeolocateControl } from 'react-map-gl/mapbox';
+import type { MapRef } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { useAppState } from '../../hooks/useAppState';
 import { municipalityReferencePoints, municipalities } from '../../data/municipalities';
@@ -38,10 +39,25 @@ interface MapViewProps {
 
 export function MapView({ radiusCenter, onCloseRadius }: MapViewProps = {}) {
   const { state, dispatch } = useAppState();
+  const mapRef = useRef<MapRef>(null);
   const [popup, setPopup] = useState<PopupInfo | null>(null);
   const [is3D, setIs3D] = useState(true);
   const [viewState, setViewState] = useState(INITIAL_VIEW);
   const hasMapboxToken = MAPBOX_TOKEN.trim().length > 0;
+
+  const onMapLoad = useCallback(() => {
+    const map = mapRef.current?.getMap();
+    if (!map) return;
+    if (!map.getSource('mapbox-dem')) {
+      map.addSource('mapbox-dem', {
+        type: 'raster-dem',
+        url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
+        tileSize: 512,
+        maxzoom: 14,
+      });
+    }
+    map.setTerrain({ source: 'mapbox-dem', exaggeration: 1.5 });
+  }, []);
 
   const muniData = useMemo(() => municipalityReferencePoints, []);
   const { boundaries: tigerBoundaries } = useMunicipalityBoundaries();
@@ -103,29 +119,22 @@ export function MapView({ radiusCenter, onCloseRadius }: MapViewProps = {}) {
   return (
     <div className="relative h-full w-full">
       <Map
+        ref={mapRef}
         {...viewState}
         onMove={(evt) => setViewState(evt.viewState)}
+        onLoad={onMapLoad}
         mapboxAccessToken={MAPBOX_TOKEN}
         mapStyle="mapbox://styles/mapbox/dark-v11"
         style={{ width: '100%', height: '100%' }}
         minZoom={8}
         maxZoom={18}
         maxPitch={70}
-        terrain={{ source: 'mapbox-dem', exaggeration: 1.5 }}
         interactiveLayerIds={['municipality-points']}
         onClick={onMuniClick}
         onContextMenu={onContextMenu}
         cursor="auto"
         reuseMaps
       >
-        {/* Terrain DEM Source */}
-        <Source
-          id="mapbox-dem"
-          type="raster-dem"
-          url="mapbox://mapbox.mapbox-terrain-dem-v1"
-          tileSize={512}
-          maxzoom={14}
-        />
 
         {/* Official municipality boundaries (Census TIGER/Line) */}
         {tigerBoundaries && (
