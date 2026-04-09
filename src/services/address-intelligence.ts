@@ -1,26 +1,52 @@
-import { municipalities } from '../data/municipalities';
 import * as turf from '@turf/turf';
+import { municipalities } from '../data/municipalities';
+import type { DataFact } from '../types';
+
+const COUNTY_GIS_SOURCE_ID = 'frederick-county-gis';
+const APPROXIMATE_SOURCE_ID = 'approximate-municipality-reference';
 
 export interface AddressIntelligence {
   address: string;
   lat: number;
   lng: number;
-  municipality: string | null;
-  distanceToCity: number; // miles to City of Frederick
-  nearestMunicipality: { name: string; distance: number };
-  // All computed from location
-  zoning: string | null;
-  floodZone: string | null;
-  schoolDistrict: string | null;
-  councilDistrict: string | null;
-  fireStation: string | null;
-  policeJurisdiction: string | null;
-  waterSewer: string | null;
-  walkabilityNote: string;
-  nearbyParks: number;
-  nearbySchools: number;
-  nearbyTransit: number;
-  elevationNote: string;
+  municipalityEstimate: DataFact<string>;
+  nearestMunicipality: {
+    name: string;
+    distanceMiles: number;
+    confidence: 'approximate';
+    sourceId: string;
+    note: string;
+  };
+  distanceToFrederickMiles: number;
+  zoning: DataFact<string>;
+  floodZone: DataFact<string>;
+  schoolDistrict: DataFact<string>;
+  councilDistrict: DataFact<string>;
+  fireStation: DataFact<string>;
+  policeJurisdiction: DataFact<string>;
+  waterSewer: DataFact<string>;
+  dataRetrievedAt: string;
+  notes: string[];
+}
+
+const OFFICIAL_NOT_READY_NOTE =
+  'Live official lookup not returned yet or the intersecting layer returned no feature.';
+
+function unavailableFact(sourceId: string, note = OFFICIAL_NOT_READY_NOTE): DataFact<string> {
+  return {
+    value: null,
+    confidence: 'unavailable',
+    sourceId,
+    note,
+  };
+}
+
+function officialFact(value: string, sourceId: string): DataFact<string> {
+  return {
+    value,
+    confidence: 'official',
+    sourceId,
+  };
 }
 
 export function computeAddressIntelligence(
@@ -31,48 +57,61 @@ export function computeAddressIntelligence(
   const point = turf.point([lng, lat]);
   const frederickCenter = turf.point([-77.4105, 39.4143]);
 
-  // Find which municipality (if any) the point is in
-  let inMunicipality: string | null = null;
-  let nearest = { name: '', distance: Infinity };
+  let nearest = { name: municipalities[0]?.name ?? 'Unknown', distance: Number.POSITIVE_INFINITY, area: 0 };
 
-  for (const m of municipalities) {
-    const dist = turf.distance(point, turf.point(m.centroid), { units: 'miles' });
-    if (dist < nearest.distance) {
-      nearest = { name: m.name, distance: Math.round(dist * 10) / 10 };
-    }
-    // Rough check: if within approximate radius of municipality
-    const approxRadius = Math.sqrt(m.area) * 0.7;
-    if (dist < approxRadius) {
-      inMunicipality = m.name;
+  for (const municipality of municipalities) {
+    const distance = turf.distance(point, turf.point(municipality.centroid), { units: 'miles' });
+    if (distance < nearest.distance) {
+      nearest = { name: municipality.name, distance, area: municipality.area };
     }
   }
 
-  const distToCity = turf.distance(point, frederickCenter, { units: 'miles' });
+  const estimatedRadiusMiles = Math.max(Math.sqrt(nearest.area) * 0.7, 0.5);
+  const estimatedMunicipality =
+    nearest.distance <= estimatedRadiusMiles
+      ? {
+          value: nearest.name,
+          confidence: 'approximate' as const,
+          sourceId: APPROXIMATE_SOURCE_ID,
+          note: 'Derived from municipality centroids and manual area snapshots. This is directional context, not an official boundary lookup.',
+        }
+      : {
+          value: null,
+          confidence: 'unavailable' as const,
+          sourceId: APPROXIMATE_SOURCE_ID,
+          note: 'Official municipality boundaries are not wired yet, so the app cannot confidently assign a municipality here.',
+        };
 
   return {
     address,
     lat,
     lng,
-    municipality: inMunicipality,
-    distanceToCity: Math.round(distToCity * 10) / 10,
-    nearestMunicipality: nearest,
-    // These would be filled by actual GIS queries in production
-    zoning: null,
-    floodZone: null,
-    schoolDistrict: null,
-    councilDistrict: null,
-    fireStation: null,
-    policeJurisdiction: null,
-    waterSewer: null,
-    walkabilityNote: distToCity < 3 ? 'Walkable urban area' : distToCity < 8 ? 'Suburban — car recommended' : 'Rural area',
-    nearbyParks: 0,
-    nearbySchools: 0,
-    nearbyTransit: 0,
-    elevationNote: lat > 39.55 ? 'Catoctin Mountain foothills (~1,200+ ft)' : lat > 39.45 ? 'Piedmont plateau (~300-500 ft)' : 'Monocacy Valley (~250-350 ft)',
+    municipalityEstimate: estimatedMunicipality,
+    nearestMunicipality: {
+      name: nearest.name,
+      distanceMiles: Number(nearest.distance.toFixed(1)),
+      confidence: 'approximate',
+      sourceId: APPROXIMATE_SOURCE_ID,
+      note: 'Nearest municipality is measured from centroid distance only.',
+    },
+    distanceToFrederickMiles: Number(
+      turf.distance(point, frederickCenter, { units: 'miles' }).toFixed(1)
+    ),
+    zoning: unavailableFact(COUNTY_GIS_SOURCE_ID),
+    floodZone: unavailableFact(COUNTY_GIS_SOURCE_ID),
+    schoolDistrict: unavailableFact(COUNTY_GIS_SOURCE_ID),
+    councilDistrict: unavailableFact(COUNTY_GIS_SOURCE_ID),
+    fireStation: unavailableFact(COUNTY_GIS_SOURCE_ID),
+    policeJurisdiction: unavailableFact(COUNTY_GIS_SOURCE_ID),
+    waterSewer: unavailableFact(COUNTY_GIS_SOURCE_ID, 'Water and sewer lookup is not wired yet.'),
+    dataRetrievedAt: new Date().toISOString(),
+    notes: [
+      'Official overlay fields below come from live county GIS point-in-polygon queries when available.',
+      'Municipality context is approximate until official municipal boundary geometry is added.',
+    ],
   };
 }
 
-// Query ArcGIS layers to enrich intelligence
 export async function enrichWithGIS(intel: AddressIntelligence): Promise<AddressIntelligence> {
   const { lat, lng } = intel;
   const base = 'https://fcgis.frederickcountymd.gov/server_pub/rest/services';
@@ -84,51 +123,73 @@ export async function enrichWithGIS(intel: AddressIntelligence): Promise<Address
     { key: 'floodZone', url: `${base}/PlanningAndPermitting/FEMAFloodplain/MapServer/0/query?${params}`, field: 'FLD_ZONE' },
     { key: 'councilDistrict', url: `${base}/Elections/Elections/MapServer/1/query?${params}`, field: 'NAME' },
     { key: 'fireStation', url: `${base}/PublicSafety/FireAreas/MapServer/1/query?${params}`, field: 'NAME' },
-    { key: 'policeJurisdiction', url: `${base}/PublicSafety/ESZ/MapServer/6/query?${params}`, field: 'NAME' },
+    { key: 'policeJurisdiction', url: `${base}/PublicSafety/ESZ/MapServer/6/query?${params}`, field: 'JURIS' },
     { key: 'schoolDistrict', url: `${base}/PublicSchools/SchoolDistricts/MapServer/2/query?${params}`, field: 'NAME' },
-  ];
+    { key: 'waterSewer', url: `${base}/PlanningAndPermitting/WaterSewerServiceAreas/MapServer/0/query?${params}`, field: 'SERVICEAREA' },
+  ] as const;
 
   const results = await Promise.allSettled(
-    queries.map(async (q) => {
-      const res = await fetch(q.url);
-      if (!res.ok) return null;
-      const json = await res.json();
-      const features = json.features || [];
-      if (features.length > 0) {
-        const val = features[0].attributes?.[q.field] || features[0].attributes?.Name || features[0].attributes?.LABEL;
-        return { key: q.key, value: val ? String(val) : null };
+    queries.map(async (query) => {
+      const response = await fetch(query.url);
+      if (!response.ok) {
+        return { key: query.key, fact: unavailableFact(COUNTY_GIS_SOURCE_ID, `County GIS query failed with ${response.status}.`) };
       }
-      return null;
+
+      const json = await response.json();
+      const feature = json.features?.[0];
+      const rawValue =
+        feature?.attributes?.[query.field]
+        ?? feature?.attributes?.Name
+        ?? feature?.attributes?.LABEL
+        ?? null;
+
+      if (rawValue === null || rawValue === undefined || rawValue === '') {
+        return {
+          key: query.key,
+          fact: unavailableFact(
+            COUNTY_GIS_SOURCE_ID,
+            'County GIS returned no intersecting feature. Treat this as incomplete context, not clearance.'
+          ),
+        };
+      }
+
+      return {
+        key: query.key,
+        fact: officialFact(String(rawValue), COUNTY_GIS_SOURCE_ID),
+      };
     })
   );
 
-  const enriched = { ...intel };
-  for (const r of results) {
-    if (r.status === 'fulfilled' && r.value) {
-      (enriched as Record<string, unknown>)[r.value.key] = r.value.value;
-    }
-  }
+  const enriched: AddressIntelligence = {
+    ...intel,
+    dataRetrievedAt: new Date().toISOString(),
+  };
 
-  // Count nearby features using simple radius queries
-  const radiusParams = `geometry=${encodeURIComponent(JSON.stringify({ x: lng, y: lat, spatialReference: { wkid: 4326 } }))}&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&distance=2&units=esriSRUnit_StatuteMile&outFields=OBJECTID&f=json&returnGeometry=false&returnCountOnly=true`;
-
-  const countQueries = [
-    { key: 'nearbyParks', url: `${base}/ParksAndRecreation/Parks/MapServer/0/query?${radiusParams}` },
-    { key: 'nearbySchools', url: `${base}/PublicSchools/EducationalFacilities/MapServer/0/query?${radiusParams}` },
-  ];
-
-  const counts = await Promise.allSettled(
-    countQueries.map(async (q) => {
-      const res = await fetch(q.url);
-      if (!res.ok) return null;
-      const json = await res.json();
-      return { key: q.key, value: json.count || 0 };
-    })
-  );
-
-  for (const r of counts) {
-    if (r.status === 'fulfilled' && r.value) {
-      (enriched as Record<string, unknown>)[r.value.key] = r.value.value;
+  for (const result of results) {
+    if (result.status === 'fulfilled') {
+      switch (result.value.key) {
+        case 'zoning':
+          enriched.zoning = result.value.fact;
+          break;
+        case 'floodZone':
+          enriched.floodZone = result.value.fact;
+          break;
+        case 'schoolDistrict':
+          enriched.schoolDistrict = result.value.fact;
+          break;
+        case 'councilDistrict':
+          enriched.councilDistrict = result.value.fact;
+          break;
+        case 'fireStation':
+          enriched.fireStation = result.value.fact;
+          break;
+        case 'policeJurisdiction':
+          enriched.policeJurisdiction = result.value.fact;
+          break;
+        case 'waterSewer':
+          enriched.waterSewer = result.value.fact;
+          break;
+      }
     }
   }
 

@@ -34,8 +34,8 @@ export function WhatsHappeningNow() {
   const { forecast, alerts } = useWeather();
   const { dispatch } = useAppState();
   const current = forecast[0];
-  const [randomMuni] = useState(() =>
-    municipalities[Math.floor(Math.random() * municipalities.length)]
+  const [featuredMunicipality] = useState(
+    () => municipalities.find((municipality) => municipality.id === 'frederick') ?? municipalities[0]
   );
 
   const suggestions: Suggestion[] = [];
@@ -43,36 +43,36 @@ export function WhatsHappeningNow() {
   // Time-aware suggestions
   if (timeOfDay === 'morning') {
     suggestions.push(
-      { icon: '☕', title: 'Morning coffee spots', subtitle: 'Cafes & bakeries nearby', action: () => dispatch({ type: 'TOGGLE_LAYER', layerId: 'farmers-markets' }), color: '#F59E0B' },
+      { icon: '🥕', title: 'Farmers markets', subtitle: 'County reference layer', action: () => dispatch({ type: 'TOGGLE_LAYER', layerId: 'farmers-markets' }), color: '#F59E0B' },
       { icon: '🌤️', title: 'Today\'s forecast', subtitle: current ? `${current.temperature}° ${current.shortForecast}` : 'Loading...', action: () => dispatch({ type: 'OPEN_PANEL', content: 'weather' }), color: '#3B82F6' },
     );
   } else if (timeOfDay === 'afternoon') {
     suggestions.push(
-      { icon: '🌳', title: 'Explore nearby parks', subtitle: '618+ miles of trails', action: () => dispatch({ type: 'TOGGLE_LAYER', layerId: 'parks' }), color: '#10B981' },
-      { icon: '🚗', title: 'Traffic conditions', subtitle: 'Live CHART incidents', action: () => dispatch({ type: 'OPEN_PANEL', content: 'traffic' }), color: '#F97316' },
+      { icon: '🌳', title: 'Explore nearby parks', subtitle: 'County park reference layers', action: () => dispatch({ type: 'TOGGLE_LAYER', layerId: 'parks' }), color: '#10B981' },
+      { icon: '🚗', title: 'Traffic conditions', subtitle: 'CHART feed filtered to Frederick area', action: () => dispatch({ type: 'OPEN_PANEL', content: 'traffic' }), color: '#F97316' },
     );
   } else if (timeOfDay === 'evening') {
     suggestions.push(
       { icon: '🍺', title: 'Dinner & drinks', subtitle: 'Restaurants with liquor licenses', action: () => dispatch({ type: 'TOGGLE_LAYER', layerId: 'liquor' }), color: '#FBBF24' },
-      { icon: '🏛️', title: 'Civic meetings tonight', subtitle: 'Council, planning, appeals', action: () => dispatch({ type: 'OPEN_PANEL', content: 'civic' }), color: '#8B5CF6' },
+      { icon: '🏛️', title: 'Civic meetings', subtitle: 'Manual meeting snapshot', action: () => dispatch({ type: 'OPEN_PANEL', content: 'civic' }), color: '#8B5CF6' },
     );
   } else {
     suggestions.push(
       { icon: '💧', title: 'Stream levels', subtitle: '9 USGS gauges active', action: () => dispatch({ type: 'OPEN_PANEL', content: 'water' }), color: '#06B6D4' },
-      { icon: '🛡️', title: 'Safety resources', subtitle: 'Fire, police, shelters', action: () => dispatch({ type: 'TOGGLE_LAYER', layerId: 'fire-stations' }), color: '#EF4444' },
+      { icon: '🛡️', title: 'Safety resources', subtitle: 'Fire station reference layer', action: () => dispatch({ type: 'TOGGLE_LAYER', layerId: 'fire-stations' }), color: '#EF4444' },
     );
   }
 
   // Always-relevant suggestions
   suggestions.push(
-    { icon: '📢', title: '311 service requests', subtitle: 'What\'s being reported', action: () => dispatch({ type: 'OPEN_PANEL', content: 'reports' }), color: '#EF4444' },
-    {
-      icon: '📍',
-      title: `Explore ${randomMuni.name.replace(/^(City of |Town of |Village of )/, '')}`,
-      subtitle: `Pop. ${randomMuni.population.toLocaleString()}`,
-      action: () => dispatch({ type: 'SELECT_MUNICIPALITY', id: randomMuni.id }),
-      color: '#3B82F6',
-    },
+      { icon: '📢', title: '311 service requests', subtitle: 'Community reports, mostly city', action: () => dispatch({ type: 'OPEN_PANEL', content: 'reports' }), color: '#EF4444' },
+      {
+        icon: '📍',
+        title: `Review ${featuredMunicipality.name.replace(/^(City of |Town of |Village of )/, '')}`,
+        subtitle: 'Manual municipality profile snapshot',
+        action: () => dispatch({ type: 'SELECT_MUNICIPALITY', id: featuredMunicipality.id }),
+        color: '#3B82F6',
+      },
   );
 
   return (
@@ -127,7 +127,7 @@ export function WhatsHappeningNow() {
         <div className="flex items-center justify-between">
           <div>
             <div className="text-sm font-semibold text-text">12 municipalities to explore</div>
-            <div className="text-xs text-text-muted mt-0.5">Right-click the map for instant location intelligence</div>
+            <div className="text-xs text-text-muted mt-0.5">Municipal boundaries are not wired yet, so the map uses reference points and manual profile snapshots.</div>
           </div>
           <span className="text-2xl">🧭</span>
         </div>

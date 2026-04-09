@@ -1,5 +1,8 @@
 import type { SearchResult } from '../types';
 
+// TODO: Route address search through a backend broker that can prioritize official county/city
+// geocoders, normalize responses, and cache results. Browser-side Nominatim is acceptable for
+// prototyping but not for a high-trust production civic product.
 const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
 
 // Frederick County bounding box

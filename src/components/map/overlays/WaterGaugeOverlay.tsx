@@ -2,7 +2,12 @@ import { useState, useEffect } from 'react';
 import { Source, Layer } from 'react-map-gl/mapbox';
 import { fetchWaterLevels } from '../../../services/api/water';
 
-export function WaterGaugeOverlay(_props: { onPopup: (info: { lng: number; lat: number; html: string } | null) => void }) {
+interface OverlayProps {
+  onPopup: (info: { lng: number; lat: number; html: string } | null) => void;
+}
+
+export function WaterGaugeOverlay({ onPopup }: OverlayProps) {
+  void onPopup;
   const [data, setData] = useState<GeoJSON.FeatureCollection | null>(null);
 
   useEffect(() => {

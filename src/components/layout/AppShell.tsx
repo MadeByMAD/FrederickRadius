@@ -12,7 +12,6 @@ import { LayerPanel } from '../layers/LayerPanel';
 import { LiveActivityFeed } from '../shared/LiveActivityFeed';
 import { WelcomeScreen } from '../shared/WelcomeScreen';
 import { GuidedTour } from '../shared/GuidedTour';
-import { Confetti } from '../shared/Confetti';
 import { SearchBar } from './SearchBar';
 import { MunicipalityCard } from '../municipalities/MunicipalityCard';
 import { municipalities } from '../../data/municipalities';
@@ -33,6 +32,7 @@ import { CountyDashboard } from '../data-layers/CountyDashboard';
 import { WhatsHappeningNow } from '../shared/WhatsHappeningNow';
 import { WidgetStrip } from '../shared/WidgetStrip';
 import { ErrorBoundary } from '../shared/ErrorBoundary';
+import { productFeatures } from '../../config/features';
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(
@@ -49,28 +49,28 @@ function useIsMobile() {
 
 export function AppShell() {
   const { state, dispatch } = useAppState();
-  const { rewards, visitMunicipality, earnBadge } = useRewards();
+  const rewardsEnabled = productFeatures.experimentalExploration;
+  const { rewards, visitMunicipality, earnBadge } = useRewards(rewardsEnabled);
   const isMobile = useIsMobile();
   const [showWelcome, setShowWelcome] = useState(() => !sessionStorage.getItem('fr-welcomed'));
   const [showTour, setShowTour] = useState(false);
-  const [confettiTrigger] = useState(false);
   const [bottomSheetSnap, setBottomSheetSnap] = useState<SnapPoint>('peek');
   const [radiusCenter, setRadiusCenter] = useState<[number, number] | null>(null);
 
   const handleOpenPanel = (content: 'weather' | 'water' | 'civic' | 'rewards' | 'traffic' | 'reports' | 'parking' | 'compare' | 'dashboard') => {
     dispatch({ type: 'OPEN_PANEL', content });
     if (isMobile) setBottomSheetSnap('full');
-    if (content === 'weather') earnBadge('weather-watcher');
-    if (content === 'water') earnBadge('water-monitor');
-    if (content === 'civic') earnBadge('civic-minded');
+    if (productFeatures.experimentalExploration) {
+      if (content === 'weather') earnBadge('weather-watcher');
+      if (content === 'water') earnBadge('water-monitor');
+      if (content === 'civic') earnBadge('civic-minded');
+    }
   };
 
   useEffect(() => {
-    if (state.selectedMunicipality) {
-      visitMunicipality(state.selectedMunicipality);
-      if (isMobile) setBottomSheetSnap('full');
-    }
-  }, [state.selectedMunicipality, visitMunicipality, isMobile]);
+    if (!rewardsEnabled || !state.selectedMunicipality) return;
+    visitMunicipality(state.selectedMunicipality);
+  }, [rewardsEnabled, state.selectedMunicipality, visitMunicipality]);
 
   // Enter key skips welcome
   useEffect(() => {
@@ -86,12 +86,15 @@ export function AppShell() {
     return <WelcomeScreen onComplete={() => { setShowWelcome(false); sessionStorage.setItem('fr-welcomed', '1'); }} />;
   }
 
+  const mobileSheetSnap: SnapPoint = state.slidePanelContent || state.selectedMunicipality
+    ? 'full'
+    : bottomSheetSnap;
+
   // ── MOBILE LAYOUT ──
   if (isMobile) {
     return (
       <div className="h-full w-full relative">
         <CommandPalette />
-        <Confetti trigger={confettiTrigger} />
 
         {/* Full-screen Map */}
         <div className="h-full w-full">
@@ -112,7 +115,7 @@ export function AppShell() {
 
         {/* Bottom Sheet */}
         <BottomSheet
-          snap={bottomSheetSnap}
+          snap={mobileSheetSnap}
           onSnapChange={setBottomSheetSnap}
           peekContent={
             <div className="space-y-2">
@@ -145,13 +148,13 @@ export function AppShell() {
 
               {/* County stats quick access */}
               <button
-                onClick={() => handleOpenPanel('dashboard' as 'weather')}
+                onClick={() => handleOpenPanel('dashboard')}
                 className="w-full rounded-xl bg-bg-surface border border-border p-3 text-left hover:bg-bg-hover transition-colors"
               >
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="text-sm font-medium text-text">County Dashboard</div>
-                    <div className="text-[10px] text-text-muted">305K residents · 4,500+ businesses · $560M impact</div>
+                    <div className="text-[10px] text-text-muted">Source registry, trust notes, and release blockers</div>
                   </div>
                   <span className="text-lg">📊</span>
                 </div>
@@ -191,7 +194,6 @@ export function AppShell() {
   return (
     <div className="flex h-full">
       <CommandPalette />
-      <Confetti trigger={confettiTrigger} />
 
       {/* Mobile sidebar toggle (hidden on desktop, but kept for tablet) */}
       {!state.sidebarOpen && (
@@ -209,7 +211,6 @@ export function AppShell() {
       {state.sidebarOpen && (
         <Sidebar
           onOpenPanel={handleOpenPanel}
-          points={rewards.points}
           onStartTour={() => setShowTour(true)}
         />
       )}
@@ -273,7 +274,9 @@ function MobilePanelContent({ type, rewards, addressIntel }: {
     case 'parking': return <ParkingPanel />;
     case 'compare': return <MunicipalityCompare />;
     case 'dashboard': return <CountyDashboard />;
-    case 'rewards': return <RewardsPanel rewards={rewards} />;
+    case 'rewards': return productFeatures.experimentalExploration
+      ? <RewardsPanel rewards={rewards} />
+      : <ExperimentalFeatureNotice />;
     case 'civic': return (
       <div className="space-y-6">
         <div><h3 className="mb-3 text-sm font-semibold text-text">Upcoming Meetings</h3><MeetingCalendar /></div>
@@ -282,7 +285,15 @@ function MobilePanelContent({ type, rewards, addressIntel }: {
     );
     case 'address-intel': return addressIntel ? (
       <AddressIntelligencePanel lat={addressIntel.lat} lng={addressIntel.lng} address={addressIntel.address} />
-    ) : null;
+    ) : <div className="text-sm text-text-secondary">Search for an address to inspect location context and source-backed overlays.</div>;
     default: return null;
   }
+}
+
+function ExperimentalFeatureNotice() {
+  return (
+    <div className="rounded-lg border border-border bg-bg-surface p-4 text-sm text-text-secondary">
+      Exploration rewards are disabled in the trust-first build. If they return, they should stay clearly experimental and never outrank civic utility.
+    </div>
+  );
 }

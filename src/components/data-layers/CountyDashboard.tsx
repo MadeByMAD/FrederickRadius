@@ -1,130 +1,166 @@
-import { motion } from 'framer-motion';
-import { staggerContainer, staggerItem } from '../../lib/motion';
 import { municipalities } from '../../data/municipalities';
+import { mapLayers } from '../../data/layers';
+import { sourceRegistry } from '../../data/source-registry';
+import { DataTrustBadge } from '../shared/DataTrustBadge';
+import { CivicWorkflowDeck } from '../shared/CivicWorkflowDeck';
 
-const COUNTY_STATS = [
-  { label: 'Population', value: 305000, display: '305K+', color: '#3B82F6', icon: '👥' },
-  { label: 'Businesses', value: 4500, display: '4,500+', color: '#10B981', icon: '🏪' },
-  { label: 'Annual Visitors', value: 1900000, display: '1.9M', color: '#F59E0B', icon: '🧳' },
-  { label: 'Economic Impact', value: 560, display: '$560M', color: '#8B5CF6', icon: '💰' },
-  { label: 'Municipalities', value: 12, display: '12', color: '#EC4899', icon: '🏘️' },
-  { label: 'Data Sources', value: 500, display: '500+', color: '#06B6D4', icon: '📊' },
+const sources = Object.values(sourceRegistry);
+
+const summaryCards = [
+  { label: 'Source Registry', value: String(sources.length), detail: 'Documented sources in code', confidence: 'reference' as const },
+  { label: 'Official Sources', value: String(sources.filter((source) => source.official).length), detail: 'Government-published feeds or catalogs', confidence: 'official' as const },
+  { label: 'Operational Feeds', value: String(sources.filter((source) => source.classification === 'operational').length), detail: 'Weather, water, traffic', confidence: 'official' as const },
+  { label: 'Map Layers', value: String(mapLayers.length), detail: 'Layer definitions with trust metadata', confidence: 'reference' as const },
+  { label: 'Municipal Profiles', value: String(municipalities.length), detail: 'Manual reference snapshots', confidence: 'reference' as const },
+  { label: 'Manual Inputs', value: String(sources.filter((source) => source.authority === 'manual').length), detail: 'Still need an ingestion workflow', confidence: 'approximate' as const },
 ];
 
-const ECONOMIC_HIGHLIGHTS = [
-  { label: 'Median Household Income', value: '$120,458', context: '33% above national median', trend: 'up' },
-  { label: 'Median Home Value', value: '$437,700', context: 'Strong real estate market', trend: 'up' },
-  { label: 'Unemployment Rate', value: '2.5%', context: 'Well below national average', trend: 'down' },
-  { label: 'Labor Force', value: '153,799', context: 'Highly educated workforce', trend: 'stable' },
+const releaseBlockers = [
+  'Official municipal boundary geometry is not integrated, so jurisdiction lookup remains approximate.',
+  'Civic meetings and representative directories are still maintained as manual snapshots.',
+  'ArcGIS layer freshness, service health, and fetched timestamps are not surfaced per layer yet.',
+  'There is no backend normalization, validation, or cache layer for brittle third-party feeds.',
+  'Crime and 911 data architecture is not implemented and must not be implied by the current UI.',
 ];
 
 export function CountyDashboard() {
-  const totalPop = municipalities.reduce((sum, m) => sum + m.population, 0);
+  const totalPopulation = municipalities.reduce((sum, municipality) => sum + municipality.population, 0);
 
   return (
     <div className="space-y-5">
-      {/* Hero stats grid */}
-      <motion.div
-        variants={staggerContainer}
-        initial="initial"
-        animate="animate"
-        className="grid grid-cols-3 gap-2"
-      >
-        {COUNTY_STATS.map((stat) => (
-          <motion.div
-            key={stat.label}
-            variants={staggerItem}
-            className="rounded-xl bg-bg-elevated border border-border p-3 text-center"
-          >
-            <div className="text-xl mb-1">{stat.icon}</div>
-            <div className="text-lg font-bold tabular-nums" style={{ color: stat.color }}>
-              {stat.display}
+      <div className="rounded-xl border border-border bg-bg-surface p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <div className="text-lg font-semibold text-text">Trust & Coverage Overview</div>
+            <div className="mt-1 text-sm text-text-secondary">
+              This dashboard focuses on source posture and product readiness, not unsupported county brag metrics.
             </div>
-            <div className="text-[9px] text-text-muted uppercase tracking-wider mt-0.5">{stat.label}</div>
-          </motion.div>
-        ))}
-      </motion.div>
+          </div>
+          <DataTrustBadge confidence="reference" />
+        </div>
+      </div>
 
-      {/* Economic highlights */}
-      <div>
-        <h4 className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-2">
-          Economic Indicators
-        </h4>
-        <div className="space-y-1.5">
-          {ECONOMIC_HIGHLIGHTS.map((item) => (
-            <div key={item.label} className="rounded-lg bg-bg-surface border border-border p-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-xs text-text-muted">{item.label}</div>
-                  <div className="text-base font-bold text-text mt-0.5">{item.value}</div>
-                </div>
-                <div className="text-right">
-                  <span className={`text-xs ${
-                    item.trend === 'up' ? 'text-success' : item.trend === 'down' ? 'text-success' : 'text-text-muted'
-                  }`}>
-                    {item.trend === 'up' ? '↑' : item.trend === 'down' ? '↓' : '→'}
-                  </span>
-                </div>
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+        {summaryCards.map((card) => (
+          <div key={card.label} className="rounded-xl border border-border bg-bg-elevated p-3">
+            <div className="flex items-center justify-between gap-2">
+              <div className="text-[10px] uppercase tracking-wider text-text-muted">{card.label}</div>
+              <DataTrustBadge confidence={card.confidence} />
+            </div>
+            <div className="mt-2 text-2xl font-bold text-text">{card.value}</div>
+            <div className="mt-1 text-[11px] leading-4 text-text-muted">{card.detail}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="rounded-xl border border-border bg-bg-surface p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <div className="text-sm font-semibold text-text">Recommended Civic Views</div>
+            <div className="mt-1 text-xs leading-5 text-text-secondary">
+              These are the product-level starting points Frederick Radius should optimize for. They reduce layer overload and make trust boundaries part of the experience.
+            </div>
+          </div>
+          <DataTrustBadge confidence="reference" />
+        </div>
+        <div className="mt-4">
+          <CivicWorkflowDeck />
+        </div>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        {sources.map((source) => (
+          <div key={source.id} className="rounded-lg border border-border bg-bg-surface p-3">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <div className="text-sm font-medium text-text">{source.name}</div>
+                <div className="text-xs text-text-muted">{source.owner}</div>
               </div>
-              <div className="text-[10px] text-text-muted mt-1">{item.context}</div>
+              <DataTrustBadge confidence={source.official ? 'official' : source.authority === 'derived' ? 'approximate' : 'reference'} />
+            </div>
+            <div className="mt-2 text-xs leading-5 text-text-secondary">{source.notes}</div>
+            {source.riskNotes && (
+              <div className="mt-2 rounded-md bg-bg-elevated px-2 py-1.5 text-[11px] leading-4 text-text-muted">
+                Risk: {source.riskNotes}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className="rounded-xl border border-border bg-bg-surface p-4">
+        <div className="text-xs font-semibold uppercase tracking-wider text-text-secondary">Public Safety Posture</div>
+        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+          <BoundaryCard
+            title="Available now"
+            detail="Stations, shelters, ESZ boundaries, roadway flood points, weather alerts, and traffic disruptions can support public-safety context."
+          />
+          <BoundaryCard
+            title="Not available now"
+            detail="Frederick Radius still does not have a verified countywide calls-for-service, crime incident, or live 911 product surface."
+          />
+          <BoundaryCard
+            title="Safe use"
+            detail="Use current public-safety layers as reference geography and emergency context, not as proof of live incidents or operational response."
+          />
+          <BoundaryCard
+            title="Next threshold"
+            detail="No operational crime or 911 surface should ship until verified sources, privacy rules, and a backend normalization layer exist."
+          />
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-amber-300/20 bg-amber-300/8 p-4">
+        <div className="text-xs font-semibold uppercase tracking-wider text-amber-100">Current Release Blockers</div>
+        <div className="mt-3 space-y-2">
+          {releaseBlockers.map((blocker) => (
+            <div key={blocker} className="flex items-start gap-2 text-xs leading-5 text-amber-50/90">
+              <span className="mt-0.5">•</span>
+              <span>{blocker}</span>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Municipality breakdown */}
       <div>
-        <h4 className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-2">
-          Municipality Population Share
-        </h4>
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <h4 className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
+            Municipality Reference Snapshot
+          </h4>
+          <span className="text-[10px] text-text-muted">Manual demographic data, verified in repo on 2026-04-08</span>
+        </div>
         <div className="space-y-1.5">
           {municipalities
-            .sort((a, b) => b.population - a.population)
+            .slice()
+            .sort((left, right) => right.population - left.population)
             .slice(0, 6)
-            .map((m) => {
-              const pct = (m.population / totalPop) * 100;
+            .map((municipality) => {
+              const share = (municipality.population / totalPopulation) * 100;
               return (
-                <div key={m.id} className="flex items-center gap-3">
+                <div key={municipality.id} className="flex items-center gap-3">
                   <div className="w-24 text-xs text-text truncate">
-                    {m.name.replace(/^(City of |Town of |Village of )/, '')}
+                    {municipality.name.replace(/^(City of |Town of |Village of )/, '')}
                   </div>
-                  <div className="flex-1 h-2 bg-bg-hover rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${pct}%` }}
-                      transition={{ duration: 0.8, ease: 'easeOut' }}
-                      className="h-full bg-accent rounded-full"
-                    />
+                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-bg-hover">
+                    <div className="h-full rounded-full bg-accent" style={{ width: `${share}%` }} />
                   </div>
                   <div className="w-16 text-right text-xs text-text-muted tabular-nums">
-                    {m.population.toLocaleString()}
+                    {municipality.population.toLocaleString()}
                   </div>
                 </div>
               );
             })}
         </div>
       </div>
+    </div>
+  );
+}
 
-      {/* Data sources summary */}
-      <div className="rounded-xl bg-gradient-to-br from-accent/5 to-success/5 border border-accent/10 p-4">
-        <div className="text-sm font-semibold text-text mb-2">Powered by Real Data</div>
-        <div className="grid grid-cols-2 gap-y-1.5 text-xs text-text-secondary">
-          <span>Frederick County GIS</span>
-          <span>198 services</span>
-          <span>City of Frederick GIS</span>
-          <span>67 services</span>
-          <span>Maryland iMAP</span>
-          <span>120+ layers</span>
-          <span>Federal APIs</span>
-          <span>Census, FEMA, NPS, BLS</span>
-          <span>Real-time feeds</span>
-          <span>NWS, USGS, CHART, 311</span>
-        </div>
-      </div>
-
-      <div className="text-xs text-text-muted text-center">
-        Sources: Census ACS 2023, BLS, Frederick County Economic Development
-      </div>
+function BoundaryCard({ title, detail }: { title: string; detail: string }) {
+  return (
+    <div className="rounded-lg bg-bg-elevated p-3">
+      <div className="text-xs font-semibold text-text">{title}</div>
+      <div className="mt-1 text-xs leading-5 text-text-secondary">{detail}</div>
     </div>
   );
 }

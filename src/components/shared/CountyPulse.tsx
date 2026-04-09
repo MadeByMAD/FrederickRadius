@@ -18,13 +18,6 @@ export function CountyPulse() {
 
   const current = forecast[0];
   const greeting = getGreeting(time);
-  const avgGaugeHeight = gauges.length > 0
-    ? gauges.reduce((sum, g) => {
-        const h = g.values.find((v) => v.parameterCode === '00065');
-        return sum + (h ? h.value : 0);
-      }, 0) / gauges.length
-    : 0;
-
   return (
     <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10">
       <button
@@ -66,7 +59,7 @@ export function CountyPulse() {
       {expanded && (
         <div className="mt-2 rounded-2xl bg-bg-elevated/95 border border-border/50 backdrop-blur-md shadow-2xl p-4 w-80 animate-slide-in">
           <div className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-3">
-            Frederick County Pulse
+            Frederick Feed Snapshot
           </div>
 
           <div className="grid grid-cols-2 gap-2">
@@ -79,23 +72,23 @@ export function CountyPulse() {
             />
             <PulseCard
               icon="💧"
-              label="Avg Stream Level"
-              value={avgGaugeHeight > 0 ? `${avgGaugeHeight.toFixed(1)} ft` : '...'}
-              detail={`${gauges.length} active gauges`}
+              label="USGS Gauges"
+              value={gauges.length > 0 ? String(gauges.length) : '...'}
+              detail="Recent readings by site"
               onClick={() => { dispatch({ type: 'OPEN_PANEL', content: 'water' }); setExpanded(false); }}
             />
             <PulseCard
               icon="🚗"
               label="Traffic"
-              value="Live"
-              detail="CHART incidents"
+              value="CHART"
+              detail="State feed filtered to Frederick area"
               onClick={() => { dispatch({ type: 'OPEN_PANEL', content: 'traffic' }); setExpanded(false); }}
             />
             <PulseCard
               icon="📢"
               label="311 Reports"
-              value="Active"
-              detail="SeeClickFix issues"
+              value="Community"
+              detail="SeeClickFix issues, mostly city"
               onClick={() => { dispatch({ type: 'OPEN_PANEL', content: 'reports' }); setExpanded(false); }}
             />
           </div>
@@ -113,7 +106,7 @@ export function CountyPulse() {
 
           <div className="mt-3 flex items-center justify-between text-[10px] text-text-muted">
             <span>{time.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</span>
-            <span>All data sources live</span>
+            <span>Selected feeds, not full county operations</span>
           </div>
         </div>
       )}

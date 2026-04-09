@@ -74,11 +74,3 @@ export async function fetchWaterLevels(): Promise<WaterGauge[]> {
   gaugeCache = { data: gauges, timestamp: Date.now() };
   return gauges;
 }
-
-export function getWaterLevelStatus(heightFt: number): { label: string; color: string } {
-  if (heightFt < 2) return { label: 'Low', color: '#F59E0B' };
-  if (heightFt < 6) return { label: 'Normal', color: '#10B981' };
-  if (heightFt < 10) return { label: 'Moderate', color: '#F59E0B' };
-  if (heightFt < 15) return { label: 'High', color: '#EF4444' };
-  return { label: 'Flood', color: '#DC2626' };
-}

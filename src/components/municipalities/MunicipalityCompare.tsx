@@ -15,6 +15,10 @@ export function MunicipalityCompare() {
 
   return (
     <div className="space-y-4">
+      <div className="rounded-lg border border-border bg-bg-surface p-3 text-xs leading-5 text-text-secondary">
+        Municipality comparison uses manual demographic snapshots. It is useful for rough context, not an official statistical release.
+      </div>
+
       {/* Selectors */}
       <div className="grid grid-cols-2 gap-3">
         <MuniSelect value={leftId} onChange={setLeftId} exclude={rightId} color="#3B82F6" />

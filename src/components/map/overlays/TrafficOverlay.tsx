@@ -2,12 +2,17 @@ import { useState, useEffect } from 'react';
 import { Source, Layer } from 'react-map-gl/mapbox';
 import { fetchTrafficIncidents } from '../../../services/api/traffic';
 
-export function TrafficOverlay(_props: { onPopup: (info: { lng: number; lat: number; html: string } | null) => void }) {
+interface OverlayProps {
+  onPopup: (info: { lng: number; lat: number; html: string } | null) => void;
+}
+
+export function TrafficOverlay({ onPopup }: OverlayProps) {
+  void onPopup;
   const [data, setData] = useState<GeoJSON.FeatureCollection | null>(null);
 
   useEffect(() => {
     fetchTrafficIncidents()
-      .then((incidents) => {
+      .then(({ incidents }) => {
         if (incidents.length === 0) return;
         setData({
           type: 'FeatureCollection',

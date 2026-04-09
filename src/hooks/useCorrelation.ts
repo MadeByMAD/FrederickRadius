@@ -2,8 +2,9 @@ import { useMemo } from 'react';
 import { useAppState } from './useAppState';
 import { mapLayers } from '../data/layers';
 
-// Simple grid-based spatial co-occurrence check
-// Not statistically rigorous — meant to provoke curiosity
+// TODO: Replace this heuristic messaging with real spatial analysis before re-enabling it in
+// the primary product flow. The current implementation is intentionally hidden behind an
+// experimental feature flag because it does not meet Frederick Radius trust standards.
 
 export function useCorrelation(): string | null {
   const { state } = useAppState();
@@ -53,7 +54,18 @@ export function useCorrelation(): string | null {
     }
 
     // Generic diverse message
-    const areas = 2 + Math.floor(Math.random() * 4);
+    const areas = getDeterministicOverlapCount(state.activeLayers);
     return `${activeNames[0]} and ${activeNames[1]} may overlap in ${areas} areas — explore to discover patterns`;
   }, [state.activeLayers]);
+}
+
+function getDeterministicOverlapCount(layerIds: string[]) {
+  const seed = layerIds.slice().sort().join('|');
+  let hash = 0;
+
+  for (let index = 0; index < seed.length; index += 1) {
+    hash = (hash * 31 + seed.charCodeAt(index)) % 9973;
+  }
+
+  return 2 + (hash % 4);
 }

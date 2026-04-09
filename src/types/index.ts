@@ -1,5 +1,61 @@
 import type { Feature, Polygon, MultiPolygon, Point, FeatureCollection } from 'geojson';
 
+export type SourceAuthority =
+  | 'official'
+  | 'government-hosted'
+  | 'community'
+  | 'third-party'
+  | 'manual'
+  | 'derived';
+
+export type DataCadence =
+  | 'live'
+  | 'near-real-time'
+  | 'daily'
+  | 'weekly'
+  | 'monthly'
+  | 'quarterly'
+  | 'annual'
+  | 'manual'
+  | 'static'
+  | 'unknown';
+
+export type DataClassification =
+  | 'operational'
+  | 'reference'
+  | 'community-report'
+  | 'derived'
+  | 'manual-snapshot';
+
+export type ConfidenceLabel =
+  | 'official'
+  | 'reference'
+  | 'approximate'
+  | 'experimental'
+  | 'unavailable';
+
+export interface DataSourceMetadata {
+  id: string;
+  name: string;
+  owner: string;
+  sourceUrl: string;
+  authority: SourceAuthority;
+  official: boolean;
+  classification: DataClassification;
+  cadence: DataCadence;
+  coverageArea: string;
+  lastVerified?: string;
+  notes?: string;
+  riskNotes?: string;
+}
+
+export interface DataFact<T> {
+  value: T | null;
+  confidence: ConfidenceLabel;
+  sourceId?: string;
+  note?: string;
+}
+
 export interface Municipality {
   id: string;
   name: string;
@@ -12,9 +68,12 @@ export interface Municipality {
   description: string;
   website?: string;
   officials?: Official[];
+  sourceId?: string;
+  dataNote?: string;
+  verifiedDate?: string;
 }
 
-export interface MunicipalityFeature extends Feature<Polygon | MultiPolygon> {
+export interface MunicipalityFeature extends Feature<Polygon | MultiPolygon | Point> {
   properties: Municipality;
 }
 
@@ -75,6 +134,13 @@ export interface MapLayer {
   color: string;
   endpoint: string;
   type: 'point' | 'polygon' | 'line';
+  sourceId: string;
+  classification: DataClassification;
+  confidence: Exclude<ConfidenceLabel, 'unavailable'>;
+  cadence: DataCadence;
+  coverageArea: string;
+  summary: string;
+  notes?: string;
 }
 
 export interface SearchResult {
@@ -116,6 +182,9 @@ export interface Meeting {
   time: string;
   location: string;
   type: 'council' | 'planning' | 'appeals' | 'other';
+  status?: 'manual-snapshot' | 'official-link';
+  sourceUrl?: string;
+  verifiedDate?: string;
 }
 
 export interface Representative {
@@ -127,6 +196,8 @@ export interface Representative {
   phone?: string;
   email?: string;
   website?: string;
+  sourceUrl?: string;
+  verifiedDate?: string;
 }
 
 export interface AppState {
@@ -139,6 +210,8 @@ export interface AppState {
   searchQuery: string;
   layerOpacity: Record<string, number>;
   layerOrder: string[];
+  activeWorkflowId: string | null;
+  workflowSummary: string | null;
   discoverSummary: string | null;
   layerPanelOpen: boolean;
 }

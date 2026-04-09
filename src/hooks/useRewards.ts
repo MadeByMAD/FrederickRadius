@@ -1,11 +1,14 @@
 import { useState, useCallback } from 'react';
 import type { RewardsState } from '../types';
-import { loadRewards, saveRewards } from '../services/storage';
+import { getDefaultRewards, loadRewards, saveRewards } from '../services/storage';
 
-export function useRewards() {
-  const [rewards, setRewards] = useState<RewardsState>(loadRewards);
+export function useRewards(enabled = true) {
+  const [rewards, setRewards] = useState<RewardsState>(() => (
+    enabled ? loadRewards() : getDefaultRewards()
+  ));
 
   const addPoints = useCallback((points: number, description: string) => {
+    if (!enabled) return;
     setRewards((prev) => {
       const next: RewardsState = {
         ...prev,
@@ -18,9 +21,10 @@ export function useRewards() {
       saveRewards(next);
       return next;
     });
-  }, []);
+  }, [enabled]);
 
   const visitMunicipality = useCallback((id: string) => {
+    if (!enabled) return;
     setRewards((prev) => {
       if (prev.municipalitiesVisited.includes(id)) return prev;
 
@@ -48,9 +52,10 @@ export function useRewards() {
       saveRewards(next);
       return next;
     });
-  }, []);
+  }, [enabled]);
 
   const earnBadge = useCallback((badgeId: string) => {
+    if (!enabled) return;
     setRewards((prev) => {
       const badge = prev.badges.find((b) => b.id === badgeId);
       if (!badge || badge.earned) return prev;
@@ -69,7 +74,7 @@ export function useRewards() {
       saveRewards(next);
       return next;
     });
-  }, []);
+  }, [enabled]);
 
   return { rewards, addPoints, visitMunicipality, earnBadge };
 }

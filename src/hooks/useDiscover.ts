@@ -8,6 +8,8 @@ export function useDiscover() {
   const { success } = useHaptics();
 
   const discover = useCallback(() => {
+    // TODO: Replace random layer bundles with curated, source-aware scenario presets before
+    // promoting this feature outside experimental mode.
     const count = 3 + Math.floor(Math.random() * 2); // 3 or 4
     const categories = [...new Set(mapLayers.map((l) => l.category))];
     const selected: string[] = [];

@@ -13,7 +13,7 @@ const DEFAULT_BADGES: Badge[] = [
   { id: 'cartographer', name: 'Cartographer', description: 'Explore the full county map', icon: '🧭', earned: false },
 ];
 
-function getDefaultRewards(): RewardsState {
+export function getDefaultRewards(): RewardsState {
   return {
     points: 0,
     municipalitiesVisited: [],

@@ -7,7 +7,7 @@ import { municipalities } from '../../data/municipalities';
 export function SearchBar() {
   const [query, setQuery] = useState('');
   const [showResults, setShowResults] = useState(false);
-  const { results, loading, search } = useSearch();
+  const { results, loading, error, search } = useSearch();
   const { dispatch } = useAppState();
   const { flyTo: mapFlyTo } = useMapFlyTo();
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -72,13 +72,21 @@ export function SearchBar() {
           value={query}
           onChange={(e) => handleInput(e.target.value)}
           onFocus={() => query.length > 2 && setShowResults(true)}
-          placeholder="Search addresses, places, municipalities..."
+          placeholder="Search addresses or municipalities..."
           className="w-full bg-transparent text-sm text-text placeholder-text-muted outline-none"
         />
         {loading && (
           <div className="h-4 w-4 animate-spin rounded-full border-2 border-border border-t-accent flex-shrink-0" />
         )}
       </div>
+      <div className="mt-1 px-1 text-[10px] leading-4 text-text-muted">
+        Address search currently uses OpenStreetMap Nominatim. Results help locate places but do not verify jurisdiction or official address status.
+      </div>
+      {error && (
+        <div className="mt-1 px-1 text-[10px] leading-4 text-danger">
+          {error}
+        </div>
+      )}
 
       {showResults && (matchedMunis.length > 0 || results.length > 0) && (
         <div className="absolute top-full left-0 right-0 z-50 mt-1 max-h-64 overflow-y-auto rounded-lg border border-border bg-bg-elevated shadow-lg">
@@ -93,14 +101,14 @@ export function SearchBar() {
                 >
                   <span className="text-accent">●</span>
                   <span className="text-text">{m.name}</span>
-                  <span className="ml-auto text-xs text-text-muted">Pop. {m.population.toLocaleString()}</span>
+                  <span className="ml-auto text-[10px] text-text-muted">Manual ref</span>
                 </button>
               ))}
             </>
           )}
           {results.length > 0 && (
             <>
-              <div className="px-3 py-1.5 text-xs text-text-muted">Addresses</div>
+              <div className="px-3 py-1.5 text-xs text-text-muted">Addresses (Nominatim)</div>
               {results.map((r, i) => (
                 <button
                   key={i}

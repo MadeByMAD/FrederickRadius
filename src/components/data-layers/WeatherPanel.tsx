@@ -3,17 +3,35 @@ import { useWeather } from '../../hooks/useWeather';
 import { getWeatherEmoji } from '../../services/api/weather';
 import { SkeletonWeather } from '../shared/Skeleton';
 import { fadeUp, staggerContainer, staggerItem } from '../../lib/motion';
+import { DataStatusNotice } from '../shared/DataStatusNotice';
 
 export function WeatherPanel() {
-  const { forecast, alerts, loading, error } = useWeather();
+  const { forecast, alerts, loading, error, loadedAt } = useWeather();
 
   if (loading) return <SkeletonWeather />;
-  if (error) return <div className="p-3 text-sm text-danger">{error}</div>;
+  if (error) {
+    return (
+      <div className="space-y-3">
+        <DataStatusNotice
+          sourceId="national-weather-service"
+          loadedAt={loadedAt}
+          detail="Forecasts are regional gridpoint products, not parcel-specific conditions."
+        />
+        <div className="p-3 text-sm text-danger">{error}</div>
+      </div>
+    );
+  }
 
   const current = forecast[0];
 
   return (
     <motion.div variants={fadeUp} initial="initial" animate="animate" className="space-y-3">
+      <DataStatusNotice
+        sourceId="national-weather-service"
+        loadedAt={loadedAt}
+        detail="Forecasts and alerts cover the Frederick region, not individual addresses."
+      />
+
       {alerts.length > 0 && (
         <div className="space-y-1.5">
           {alerts.map((a) => (
@@ -83,9 +101,6 @@ export function WeatherPanel() {
         </motion.div>
       </div>
 
-      <div className="text-xs text-text-muted text-center">
-        Source: National Weather Service (weather.gov)
-      </div>
     </motion.div>
   );
 }

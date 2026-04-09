@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion';
 import { useAppState } from '../../hooks/useAppState';
 import type { MapLayer } from '../../types';
+import { getSourceMetadata } from '../../data/source-registry';
+import { DataTrustBadge } from '../shared/DataTrustBadge';
 
 interface Props {
   layer: MapLayer;
@@ -9,6 +11,7 @@ interface Props {
 
 export function LayerItem({ layer, opacity }: Props) {
   const { dispatch } = useAppState();
+  const source = getSourceMetadata(layer.sourceId);
 
   return (
     <motion.div
@@ -27,10 +30,20 @@ export function LayerItem({ layer, opacity }: Props) {
         style={{ backgroundColor: layer.color }}
       />
 
-      {/* Name */}
-      <span className="text-xs text-text truncate flex-1 min-w-0">
-        {layer.icon} {layer.name}
-      </span>
+      <div className="min-w-0 flex-1">
+        <div className="truncate text-xs text-text">
+          {layer.icon} {layer.name}
+        </div>
+        <div className="mt-1 flex items-center gap-1.5">
+          <DataTrustBadge confidence={layer.confidence} />
+          <span className="truncate text-[10px] text-text-muted">
+            {source?.name ?? layer.sourceId}
+          </span>
+        </div>
+        <div className="mt-1 line-clamp-2 text-[10px] leading-4 text-text-muted">
+          {layer.notes ?? layer.summary}
+        </div>
+      </div>
 
       {/* Opacity slider */}
       <input

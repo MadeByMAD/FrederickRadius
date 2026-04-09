@@ -11,6 +11,7 @@ interface Particle {
   color: string;
   size: number;
   delay: number;
+  shape: 'circle' | 'square';
 }
 
 export function Confetti({ trigger }: { trigger: boolean }) {
@@ -19,19 +20,25 @@ export function Confetti({ trigger }: { trigger: boolean }) {
   useEffect(() => {
     if (!trigger) return;
 
-    const newParticles: Particle[] = Array.from({ length: 30 }, (_, i) => ({
-      id: i,
-      x: (Math.random() - 0.5) * 300,
-      y: -(Math.random() * 200 + 100),
-      rotation: Math.random() * 720 - 360,
-      color: COLORS[Math.floor(Math.random() * COLORS.length)],
-      size: Math.random() * 8 + 4,
-      delay: Math.random() * 0.3,
-    }));
-
-    setParticles(newParticles);
-    const timer = setTimeout(() => setParticles([]), 2000);
-    return () => clearTimeout(timer);
+    const frame = window.requestAnimationFrame(() => {
+      setParticles(
+        Array.from({ length: 30 }, (_, index) => ({
+          id: index,
+          x: (Math.random() - 0.5) * 300,
+          y: -(Math.random() * 200 + 100),
+          rotation: Math.random() * 720 - 360,
+          color: COLORS[Math.floor(Math.random() * COLORS.length)],
+          size: Math.random() * 8 + 4,
+          delay: Math.random() * 0.3,
+          shape: Math.random() > 0.5 ? 'circle' : 'square',
+        }))
+      );
+    });
+    const timer = window.setTimeout(() => setParticles([]), 2000);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.clearTimeout(timer);
+    };
   }, [trigger]);
 
   return (
@@ -58,7 +65,7 @@ export function Confetti({ trigger }: { trigger: boolean }) {
                 position: 'absolute',
                 width: p.size,
                 height: p.size,
-                borderRadius: Math.random() > 0.5 ? '50%' : '2px',
+                borderRadius: p.shape === 'circle' ? '50%' : '2px',
                 backgroundColor: p.color,
               }}
             />

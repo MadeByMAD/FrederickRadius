@@ -1,7 +1,8 @@
 /**
- * Frederick Radius — Comprehensive Data Manifest
- * All confirmed public data endpoints for Frederick County & City of Frederick
- * Last updated: April 2026
+ * Frederick Radius — data manifest
+ * Working catalog of public endpoints, source families, and candidate integrations.
+ * This file is a planning aid, not proof that every endpoint is production-ready or verified.
+ * Last reviewed in-repo: April 2026
  */
 
 export const dataManifest = {
@@ -212,12 +213,19 @@ export const dataManifest = {
   // ==========================================
   traffic: {
     incidents: 'https://chart.maryland.gov/DataFeeds/GetIncidentXml',
+    incidentsJson: 'https://chartexp1.sha.maryland.gov/CHARTExportClientService/getEventMapDataJSON.do',
     closures: 'https://chart.maryland.gov/DataFeeds/GetClosureXml',
+    closuresJson: 'https://chartexp1.sha.maryland.gov/CHARTExportClientService/getActiveClosureMapDataJSON.do',
     cameras: 'https://chart.maryland.gov/DataFeeds/GetCamerasXml',
+    camerasJson: 'https://chartexp1.sha.maryland.gov/CHARTExportClientService/getCameraMapDataJSON.do',
     weatherStations: 'https://chart.maryland.gov/DataFeeds/GetRwisXml',
+    weatherStationsJson: 'https://chartexp1.sha.maryland.gov/CHARTExportClientService/getRWISMapDataJSON.do',
     messageSigns: 'https://chart.maryland.gov/DataFeeds/GetDmsXml',
+    messageSignsJson: 'https://chartexp1.sha.maryland.gov/CHARTExportClientService/getDMSMapDataJSON.do',
     speedSensors: 'https://chart.maryland.gov/DataFeeds/GetTssXml',
+    speedSensorsJson: 'https://chartexp1.sha.maryland.gov/CHARTExportClientService/getTSSMapDataJSON.do',
     snowEmergency: 'https://chart.maryland.gov/DataFeeds/GetSepXml',
+    snowEmergencyJson: 'https://chartexp1.sha.maryland.gov/CHARTExportClientService/getSEPMapDataJSON.do',
   },
 
   // ==========================================

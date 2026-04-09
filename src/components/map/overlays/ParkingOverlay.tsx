@@ -2,7 +2,12 @@ import { useMemo } from 'react';
 import { Source, Layer } from 'react-map-gl/mapbox';
 import { dataManifest } from '../../../data/data-manifest';
 
-export function ParkingOverlay(_props: { onPopup: (info: { lng: number; lat: number; html: string } | null) => void }) {
+interface OverlayProps {
+  onPopup: (info: { lng: number; lat: number; html: string } | null) => void;
+}
+
+export function ParkingOverlay({ onPopup }: OverlayProps) {
+  void onPopup;
   const data = useMemo<GeoJSON.FeatureCollection>(
     () => ({
       type: 'FeatureCollection',

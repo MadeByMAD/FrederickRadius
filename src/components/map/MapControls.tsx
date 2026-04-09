@@ -12,6 +12,9 @@ export function MapControls() {
   return (
     <div className="space-y-3">
       <h3 className="text-xs font-semibold uppercase tracking-wider text-text-secondary">Data Layers</h3>
+      <div className="rounded-lg border border-border bg-bg-surface px-3 py-2 text-[11px] leading-5 text-text-secondary">
+        These are raw layer toggles. Use curated civic views in the desktop layer panel when you want a clearer, source-bounded starting point.
+      </div>
       {grouped.map((group) => (
         <div key={group.id}>
           <div className="mb-1 flex items-center gap-1.5 text-xs text-text-muted">

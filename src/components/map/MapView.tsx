@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo } from 'react';
 import Map, { Source, Layer, Popup, NavigationControl, ScaleControl, GeolocateControl } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { useAppState } from '../../hooks/useAppState';
-import { municipalityBoundaries, municipalities } from '../../data/municipalities';
+import { municipalityReferencePoints, municipalities } from '../../data/municipalities';
 import { FREDERICK_COUNTY_CENTER, FREDERICK_COUNTY_ZOOM } from '../../data/municipalities';
 import { GISLayerRenderer } from './GISLayerRenderer';
 import { Live311Overlay } from './overlays/Live311Overlay';
@@ -12,6 +12,7 @@ import { ParkingOverlay } from './overlays/ParkingOverlay';
 import { RadiusExplorer } from '../shared/RadiusExplorer';
 import { motion } from 'framer-motion';
 import type { MapMouseEvent } from 'react-map-gl/mapbox';
+import { MapSetupState } from './MapSetupState';
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || '';
 
@@ -39,8 +40,9 @@ export function MapView({ radiusCenter, onCloseRadius }: MapViewProps = {}) {
   const [popup, setPopup] = useState<PopupInfo | null>(null);
   const [is3D, setIs3D] = useState(true);
   const [viewState, setViewState] = useState(INITIAL_VIEW);
+  const hasMapboxToken = MAPBOX_TOKEN.trim().length > 0;
 
-  const muniData = useMemo(() => municipalityBoundaries, []);
+  const muniData = useMemo(() => municipalityReferencePoints, []);
 
   // Municipality click
   const onMuniClick = useCallback(
@@ -80,9 +82,20 @@ export function MapView({ radiusCenter, onCloseRadius }: MapViewProps = {}) {
   const selectedMuni = state.selectedMunicipality
     ? municipalities.find((m) => m.id === state.selectedMunicipality)
     : null;
+  const focusedPanel = state.slidePanelContent;
+  const showTrafficOverlay = focusedPanel === 'traffic' || state.activeWorkflowId === 'mobility-access';
+  const showWaterOverlay = focusedPanel === 'water' || state.activeWorkflowId === 'storm-flood';
+  const showReportsOverlay = focusedPanel === 'reports';
+  const showParkingOverlay = focusedPanel === 'parking';
 
   if (selectedMuni && viewState.longitude !== selectedMuni.centroid[0]) {
     // Will be handled by controlled viewState
+  }
+
+  if (!hasMapboxToken) {
+    return (
+      <MapSetupState onOpenPanel={(content) => dispatch({ type: 'OPEN_PANEL', content })} />
+    );
   }
 
   return (
@@ -97,7 +110,7 @@ export function MapView({ radiusCenter, onCloseRadius }: MapViewProps = {}) {
         maxZoom={18}
         maxPitch={70}
         terrain={{ source: 'mapbox-dem', exaggeration: 1.5 }}
-        interactiveLayerIds={['municipality-fills']}
+        interactiveLayerIds={['municipality-points']}
         onClick={onMuniClick}
         onContextMenu={onContextMenu}
         cursor="auto"
@@ -112,23 +125,17 @@ export function MapView({ radiusCenter, onCloseRadius }: MapViewProps = {}) {
           maxzoom={14}
         />
 
-        {/* Municipality Boundaries */}
+        {/* Municipality reference points */}
         <Source id="municipalities" type="geojson" data={muniData}>
           <Layer
-            id="municipality-fills"
-            type="fill"
+            id="municipality-points"
+            type="circle"
             paint={{
-              'fill-color': '#3B82F6',
-              'fill-opacity': 0.1,
-            }}
-          />
-          <Layer
-            id="municipality-borders"
-            type="line"
-            paint={{
-              'line-color': '#3B82F6',
-              'line-width': 1.5,
-              'line-opacity': 0.7,
+              'circle-color': '#3B82F6',
+              'circle-radius': ['interpolate', ['linear'], ['zoom'], 8, 4, 12, 9],
+              'circle-stroke-color': '#07111c',
+              'circle-stroke-width': 2,
+              'circle-opacity': 0.92,
             }}
           />
           <Layer
@@ -168,11 +175,11 @@ export function MapView({ radiusCenter, onCloseRadius }: MapViewProps = {}) {
         {/* GIS Data Layers (60 toggleable) */}
         <GISLayerRenderer />
 
-        {/* Live Data Overlays */}
-        <Live311Overlay onPopup={setPopup} />
-        <TrafficOverlay onPopup={setPopup} />
-        <WaterGaugeOverlay onPopup={setPopup} />
-        <ParkingOverlay onPopup={setPopup} />
+        {/* Focused operational / context overlays */}
+        {showReportsOverlay && <Live311Overlay onPopup={setPopup} />}
+        {showTrafficOverlay && <TrafficOverlay onPopup={setPopup} />}
+        {showWaterOverlay && <WaterGaugeOverlay onPopup={setPopup} />}
+        {showParkingOverlay && <ParkingOverlay onPopup={setPopup} />}
 
         {/* Popup */}
         {popup && (
@@ -198,6 +205,22 @@ export function MapView({ radiusCenter, onCloseRadius }: MapViewProps = {}) {
         <ScaleControl position="bottom-left" unit="imperial" />
         <GeolocateControl position="bottom-right" trackUserLocation />
       </Map>
+
+      <div className="pointer-events-none absolute left-3 bottom-3 z-10 max-w-xs rounded-lg border border-border/70 bg-bg-elevated/90 px-3 py-2 text-[10px] leading-4 text-text-muted backdrop-blur-md">
+        Municipal map markers are centroid references only. Official municipal boundary geometry is not wired yet.
+      </div>
+
+      {(showTrafficOverlay || showWaterOverlay || showReportsOverlay || showParkingOverlay) && (
+        <div className="pointer-events-none absolute left-3 top-3 z-10 max-w-sm rounded-lg border border-border/70 bg-bg-elevated/90 px-3 py-2 text-[10px] leading-4 text-text-muted backdrop-blur-md">
+          Focused map overlay:
+          {' '}
+          {showTrafficOverlay ? 'CHART traffic. ' : ''}
+          {showWaterOverlay ? 'USGS gauges. ' : ''}
+          {showReportsOverlay ? 'SeeClickFix reports. ' : ''}
+          {showParkingOverlay ? 'Manual parking reference. ' : ''}
+          These overlays appear only when the related panel or civic view is active.
+        </div>
+      )}
 
       {/* 2D / 3D Toggle */}
       <div className="absolute top-3 right-3 z-10 flex gap-1">

@@ -1,19 +1,25 @@
 import { useState, useEffect } from 'react';
 import { fetch311Issues, getStatusColor, type ServiceRequest } from '../../services/api/seeclickfix';
 import { SkeletonFeed } from '../shared/Skeleton';
+import { DataStatusNotice } from '../shared/DataStatusNotice';
 
 export function ReportsPanel() {
   const [issues, setIssues] = useState<ServiceRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [loadedAt, setLoadedAt] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
       try {
         setLoading(true);
+        setError(null);
         const data = await fetch311Issues();
-        if (!cancelled) setIssues(data);
+        if (!cancelled) {
+          setIssues(data);
+          setLoadedAt(Date.now());
+        }
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : 'Failed to load');
       } finally {
@@ -25,13 +31,30 @@ export function ReportsPanel() {
   }, []);
 
   if (loading) return <SkeletonFeed />;
-  if (error) return <div className="p-3 text-sm text-danger">{error}</div>;
+  if (error) {
+    return (
+      <div className="space-y-3">
+        <DataStatusNotice
+          sourceId="seeclickfix-frederick"
+          loadedAt={loadedAt}
+          detail="This is a community report feed focused mostly on Frederick City issues, not an official countywide 311 system."
+        />
+        <div className="p-3 text-sm text-danger">{error}</div>
+      </div>
+    );
+  }
 
   const openCount = issues.filter((i) => i.status === 'open').length;
   const ackCount = issues.filter((i) => i.status === 'acknowledged').length;
 
   return (
     <div className="space-y-3">
+      <DataStatusNotice
+        sourceId="seeclickfix-frederick"
+        loadedAt={loadedAt}
+        detail="Community-submitted SeeClickFix issues are useful situational signals but do not represent countywide service coverage."
+      />
+
       <div className="grid grid-cols-3 gap-2">
         <StatBox label="Open" value={openCount} color="#EF4444" />
         <StatBox label="In Progress" value={ackCount} color="#F59E0B" />
@@ -68,10 +91,6 @@ export function ReportsPanel() {
       {issues.length === 0 && (
         <div className="p-4 text-center text-sm text-text-secondary">No open service requests</div>
       )}
-
-      <div className="text-xs text-text-muted text-center">
-        Source: SeeClickFix (seeclickfix.com) — Updated every 5 min
-      </div>
     </div>
   );
 }

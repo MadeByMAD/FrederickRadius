@@ -16,6 +16,7 @@ import { RewardsPanel } from '../rewards/RewardsPanel';
 import { AddressIntelligencePanel } from '../shared/AddressIntelligencePanel';
 import { ErrorBoundary } from '../shared/ErrorBoundary';
 import type { RewardsState } from '../../types';
+import { productFeatures } from '../../config/features';
 
 const PANEL_TITLES: Record<string, string> = {
   municipality: 'Municipality',
@@ -24,11 +25,11 @@ const PANEL_TITLES: Record<string, string> = {
   traffic: 'Traffic',
   reports: '311 Service Requests',
   parking: 'Parking',
-  civic: 'Civic',
+  civic: 'Civic Directory & Meetings',
   rewards: 'Rewards',
   compare: 'Compare Municipalities',
   dashboard: 'County Dashboard',
-  'address-intel': 'Address Intelligence',
+  'address-intel': 'Location Context',
   search: 'Search Results',
 };
 
@@ -94,7 +95,9 @@ function PanelContent({ type, rewards }: { type: string; rewards: RewardsState }
     case 'dashboard':
       return <CountyDashboard />;
     case 'rewards':
-      return <RewardsPanel rewards={rewards} />;
+      return productFeatures.experimentalExploration
+        ? <RewardsPanel rewards={rewards} />
+        : <ExperimentalFeatureNotice />;
     case 'address-intel':
       return state.addressIntel ? (
         <AddressIntelligencePanel
@@ -102,7 +105,7 @@ function PanelContent({ type, rewards }: { type: string; rewards: RewardsState }
           lng={state.addressIntel.lng}
           address={state.addressIntel.address}
         />
-      ) : <div className="text-sm text-text-secondary">Search for an address to see intelligence</div>;
+      ) : <div className="text-sm text-text-secondary">Search for an address to inspect location context and source-backed overlays.</div>;
     default:
       return <div className="text-sm text-text-secondary">Select an item to view details</div>;
   }
@@ -119,6 +122,14 @@ function CivicContent() {
         <h3 className="mb-3 text-sm font-semibold text-text">Your Representatives</h3>
         <RepresentativesPanel />
       </div>
+    </div>
+  );
+}
+
+function ExperimentalFeatureNotice() {
+  return (
+    <div className="rounded-lg border border-border bg-bg-surface p-4 text-sm text-text-secondary">
+      Exploration rewards are disabled in the trust-first build. If they return, they should stay clearly experimental and never outrank civic utility.
     </div>
   );
 }

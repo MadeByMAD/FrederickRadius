@@ -1,25 +1,50 @@
 import { useWaterLevels } from '../../hooks/useWaterLevels';
-import { getWaterLevelStatus } from '../../services/api/water';
 import { SkeletonGauges } from '../shared/Skeleton';
+import { DataStatusNotice } from '../shared/DataStatusNotice';
 
 export function WaterLevelsPanel() {
-  const { gauges, loading, error } = useWaterLevels();
+  const { gauges, loading, error, loadedAt } = useWaterLevels();
 
   if (loading) return <SkeletonGauges />;
-  if (error) return <div className="p-3 text-sm text-danger">{error}</div>;
+  if (error) {
+    return (
+      <div className="space-y-3">
+        <DataStatusNotice
+          sourceId="usgs-water-services"
+          loadedAt={loadedAt}
+          detail="Gauge readings are site-specific and should not be treated as one countywide flood status."
+        />
+        <div className="p-3 text-sm text-danger">{error}</div>
+      </div>
+    );
+  }
 
   if (gauges.length === 0) {
-    return <div className="p-3 text-sm text-text-secondary">No active gauges found</div>;
+    return (
+      <div className="space-y-3">
+        <DataStatusNotice
+          sourceId="usgs-water-services"
+          loadedAt={loadedAt}
+          detail="Gauge readings are site-specific and should not be treated as one countywide flood status."
+        />
+        <div className="p-3 text-sm text-text-secondary">No active gauges found</div>
+      </div>
+    );
   }
 
   return (
     <div className="space-y-3">
+      <DataStatusNotice
+        sourceId="usgs-water-services"
+        loadedAt={loadedAt}
+        detail="Gauge height and discharge should be interpreted per site. Flood stage thresholds differ by gauge."
+      />
+
       {gauges.map((gauge) => {
         const heightValues = gauge.values.filter((v) => v.parameterCode === '00065');
         const dischargeValues = gauge.values.filter((v) => v.parameterCode === '00060');
         const latestHeight = heightValues[heightValues.length - 1];
         const latestDischarge = dischargeValues[dischargeValues.length - 1];
-        const status = latestHeight ? getWaterLevelStatus(latestHeight.value) : null;
 
         return (
           <div key={gauge.siteCode} className="rounded-lg border border-border bg-bg-surface p-3">
@@ -28,14 +53,9 @@ export function WaterLevelsPanel() {
                 <h4 className="text-sm font-medium text-text truncate">{gauge.siteName}</h4>
                 <p className="text-xs text-text-muted">USGS {gauge.siteCode}</p>
               </div>
-              {status && (
-                <span
-                  className="flex-shrink-0 rounded-full px-2 py-0.5 text-xs font-medium"
-                  style={{ backgroundColor: `${status.color}20`, color: status.color }}
-                >
-                  {status.label}
-                </span>
-              )}
+              <span className="flex-shrink-0 rounded-full border border-border bg-bg-elevated px-2 py-0.5 text-[10px] font-medium text-text-muted">
+                USGS gauge
+              </span>
             </div>
 
             <div className="mt-2 grid grid-cols-2 gap-2">
@@ -68,10 +88,6 @@ export function WaterLevelsPanel() {
           </div>
         );
       })}
-
-      <div className="text-xs text-text-muted text-center">
-        Source: USGS Water Services (waterservices.usgs.gov)
-      </div>
     </div>
   );
 }

@@ -1,42 +1,41 @@
 import { municipalities } from '../../data/municipalities';
+import { getSourceMetadata } from '../../data/source-registry';
 import { useAppState } from '../../hooks/useAppState';
+import { DataTrustBadge } from '../shared/DataTrustBadge';
 
 export function MunicipalityProfile() {
   const { state } = useAppState();
-  const muni = municipalities.find((m) => m.id === state.selectedMunicipality);
-  if (!muni) return null;
+  const municipality = municipalities.find((item) => item.id === state.selectedMunicipality);
+  if (!municipality) return null;
+
+  const source = municipality.sourceId ? getSourceMetadata(municipality.sourceId) : null;
 
   return (
     <div className="space-y-4">
-      <div>
-        <h2 className="text-lg font-semibold text-text">{muni.name}</h2>
-        <p className="mt-1 text-sm text-text-secondary">{muni.description}</p>
+      <div className="rounded-xl border border-border bg-bg-surface p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold text-text">{municipality.name}</h2>
+            <p className="mt-1 text-sm text-text-secondary">{municipality.description}</p>
+          </div>
+          <DataTrustBadge confidence="reference" />
+        </div>
+
+        <div className="mt-3 rounded-lg border border-amber-300/20 bg-amber-300/8 px-3 py-2 text-xs leading-5 text-amber-50/90">
+          {municipality.dataNote ?? 'Municipality metrics are currently a manual snapshot.'}
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-2">
-        <StatBox label="Population" value={muni.population.toLocaleString()} />
-        <StatBox label="Area" value={`${muni.area} mi²`} />
-        <StatBox label="Median Income" value={`$${muni.medianIncome.toLocaleString()}`} />
-        <StatBox label="Median Age" value={muni.medianAge.toString()} />
+        <StatBox label="Population Snapshot" value={municipality.population.toLocaleString()} />
+        <StatBox label="Area" value={`${municipality.area} mi²`} />
+        <StatBox label="Median Household Income" value={`$${municipality.medianIncome.toLocaleString()}`} />
+        <StatBox label="Median Age" value={municipality.medianAge.toString()} />
       </div>
 
-      {muni.officials && muni.officials.length > 0 && (
-        <div>
-          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-secondary">Officials</h3>
-          <div className="space-y-1.5">
-            {muni.officials.map((o, i) => (
-              <div key={i} className="flex items-center justify-between rounded bg-bg-elevated px-3 py-2">
-                <span className="text-sm text-text">{o.name}</span>
-                <span className="text-xs text-text-muted">{o.title}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {muni.website && (
+      {municipality.website && (
         <a
-          href={muni.website}
+          href={municipality.website}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-2 rounded-lg border border-border bg-bg-surface px-3 py-2 text-sm text-accent hover:bg-bg-hover transition-colors"
@@ -44,8 +43,25 @@ export function MunicipalityProfile() {
           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
           </svg>
-          Official Website
+          Official municipal website
         </a>
+      )}
+
+      {source && (
+        <div className="rounded-lg bg-bg-elevated px-3 py-2">
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-text-secondary">Source</div>
+          <div className="mt-2 text-xs text-text-secondary">
+            <a
+              href={source.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-accent hover:text-accent-hover"
+            >
+              {source.name}
+            </a>
+            <span className="text-text-muted"> · verified {municipality.verifiedDate ?? source.lastVerified ?? 'unknown date'}</span>
+          </div>
+        </div>
       )}
     </div>
   );

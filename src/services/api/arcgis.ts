@@ -1,5 +1,7 @@
 import type { GeoJSONCollection } from '../../types';
 
+// TODO: Move ArcGIS querying behind a backend normalization layer that can validate schemas,
+// limit fields, track per-layer freshness, and avoid shipping raw `outFields=*` payloads.
 const QUERY_PARAMS = 'where=1%3D1&outFields=*&f=geojson&outSR=4326';
 
 const featureCache = new Map<string, { data: GeoJSONCollection; timestamp: number }>();

@@ -20,6 +20,8 @@ const CACHE_TTL = 5 * 60 * 1000;
 export async function fetch311Issues(): Promise<ServiceRequest[]> {
   if (cache && Date.now() - cache.timestamp < CACHE_TTL) return cache.data;
 
+  // TODO: Separate City of Frederick coverage from countywide civic claims in the UI. This
+  // endpoint primarily reflects the `frederick` place feed, not a verified countywide 311 system.
   const res = await fetch(
     'https://seeclickfix.com/api/v2/issues?place_url=frederick&per_page=50&status=open,acknowledged'
   );

@@ -1,23 +1,39 @@
 import type { Representative } from '../../types';
-import { countyRepresentatives, stateRepresentatives, federalRepresentatives } from '../../data/civic';
+import {
+  countyRepresentatives,
+  stateRepresentatives,
+  federalRepresentatives,
+  CIVIC_DIRECTORY_NOTE,
+} from '../../data/civic';
+import { DataTrustBadge } from '../shared/DataTrustBadge';
 
 export function RepresentativesPanel() {
   const groups = [
     { label: 'County Government', reps: countyRepresentatives },
-    { label: 'State Legislature', reps: stateRepresentatives },
+    { label: 'Frederick County State Delegation', reps: stateRepresentatives },
     { label: 'Federal', reps: federalRepresentatives },
   ];
 
   return (
     <div className="space-y-4">
+      <div className="rounded-lg border border-border bg-bg-surface p-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-text-secondary">
+            Directory Scope
+          </div>
+          <DataTrustBadge confidence="reference" />
+        </div>
+        <div className="mt-2 text-xs leading-5 text-text-secondary">{CIVIC_DIRECTORY_NOTE}</div>
+      </div>
+
       {groups.map((group) => (
         <div key={group.label}>
           <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-secondary">
             {group.label}
           </h4>
           <div className="space-y-1">
-            {group.reps.map((rep, i) => (
-              <RepCard key={i} rep={rep} />
+            {group.reps.map((rep) => (
+              <RepCard key={`${group.label}-${rep.name}-${rep.district ?? 'none'}`} rep={rep} />
             ))}
           </div>
         </div>
@@ -28,26 +44,28 @@ export function RepresentativesPanel() {
 
 function RepCard({ rep }: { rep: Representative }) {
   return (
-    <div className="rounded-lg bg-bg-surface p-2.5 border border-border">
-      <div className="flex items-center justify-between gap-2">
+    <div className="rounded-lg border border-border bg-bg-surface p-2.5">
+      <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="text-sm font-medium text-text truncate">{rep.name}</div>
           <div className="text-xs text-text-muted">
             {rep.title}
-            {rep.district && ` - ${rep.district}`}
+            {rep.district && ` · ${rep.district}`}
             {rep.party && ` (${rep.party})`}
           </div>
+          {rep.verifiedDate && (
+            <div className="mt-1 text-[10px] text-text-muted">Verified {rep.verifiedDate}</div>
+          )}
         </div>
-        {rep.website && (
+
+        {rep.sourceUrl && (
           <a
-            href={rep.website}
+            href={rep.sourceUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-shrink-0 text-accent hover:text-accent-hover"
+            className="flex-shrink-0 rounded border border-border bg-bg-elevated px-2 py-1 text-[10px] font-medium text-accent hover:bg-bg-hover"
           >
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-            </svg>
+            Source
           </a>
         )}
       </div>

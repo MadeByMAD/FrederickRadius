@@ -3,6 +3,9 @@ import type { Municipality } from '../types';
 export const FREDERICK_COUNTY_CENTER: [number, number] = [-77.41, 39.41];
 export const FREDERICK_COUNTY_ZOOM = 10;
 
+const MUNICIPALITY_DATA_NOTE =
+  'Demographic values are manual reference snapshots until a Census-backed ingestion pipeline is added.';
+
 export const municipalities: Municipality[] = [
   {
     id: 'frederick',
@@ -13,12 +16,11 @@ export const municipalities: Municipality[] = [
     medianAge: 36.2,
     area: 22.4,
     centroid: [-77.4105, 39.4143],
-    description: 'The county seat and largest city, known for its historic downtown, arts district, and thriving restaurant scene.',
-    website: 'https://www.cityoffrederick.com',
-    officials: [
-      { name: 'Michael O\'Connor', title: 'Mayor' },
-      { name: 'Board of Aldermen', title: 'City Legislature' },
-    ],
+    description: 'The county seat and largest city, known for its historic downtown, arts district, and restaurant scene.',
+    website: 'https://www.cityoffrederickmd.gov',
+    sourceId: 'manual-municipality-snapshot',
+    dataNote: MUNICIPALITY_DATA_NOTE,
+    verifiedDate: '2026-04-08',
   },
   {
     id: 'thurmont',
@@ -29,11 +31,11 @@ export const municipalities: Municipality[] = [
     medianAge: 40.1,
     area: 2.5,
     centroid: [-77.4108, 39.6237],
-    description: 'Gateway to the Catoctin Mountains and Camp David. Known for the Catoctin Colorfest and outdoor recreation.',
+    description: 'Gateway to the Catoctin Mountains and Camp David, with strong access to parks and outdoor recreation.',
     website: 'https://www.thurmont.com',
-    officials: [
-      { name: 'John Kinnaird', title: 'Mayor' },
-    ],
+    sourceId: 'manual-municipality-snapshot',
+    dataNote: MUNICIPALITY_DATA_NOTE,
+    verifiedDate: '2026-04-08',
   },
   {
     id: 'emmitsburg',
@@ -44,11 +46,11 @@ export const municipalities: Municipality[] = [
     medianAge: 33.5,
     area: 2.1,
     centroid: [-77.3272, 39.7048],
-    description: 'Home to Mount St. Mary\'s University and the National Shrine of St. Elizabeth Ann Seton.',
+    description: 'Home to Mount St. Mary’s University and the National Shrine of St. Elizabeth Ann Seton.',
     website: 'https://www.emmitsburgmd.gov',
-    officials: [
-      { name: 'Frank Davis', title: 'Mayor' },
-    ],
+    sourceId: 'manual-municipality-snapshot',
+    dataNote: MUNICIPALITY_DATA_NOTE,
+    verifiedDate: '2026-04-08',
   },
   {
     id: 'middletown',
@@ -59,11 +61,11 @@ export const municipalities: Municipality[] = [
     medianAge: 38.7,
     area: 1.9,
     centroid: [-77.5447, 39.4437],
-    description: 'A historic town in Middletown Valley, surrounded by Civil War battlefields and scenic farmland.',
+    description: 'A historic town in Middletown Valley surrounded by agricultural land and Civil War landscapes.',
     website: 'https://www.middletownmd.gov',
-    officials: [
-      { name: 'John Miller', title: 'Mayor' },
-    ],
+    sourceId: 'manual-municipality-snapshot',
+    dataNote: MUNICIPALITY_DATA_NOTE,
+    verifiedDate: '2026-04-08',
   },
   {
     id: 'brunswick',
@@ -74,11 +76,11 @@ export const municipalities: Municipality[] = [
     medianAge: 37.8,
     area: 2.3,
     centroid: [-77.6278, 39.3142],
-    description: 'A railroad town along the Potomac River and C&O Canal, with a heritage railroad museum.',
-    website: 'https://www.brunswickmd.gov',
-    officials: [
-      { name: 'Nathan Brown', title: 'Mayor' },
-    ],
+    description: 'A railroad city along the Potomac River and C&O Canal with strong regional trail access.',
+    website: 'https://brunswickmd.gov',
+    sourceId: 'manual-municipality-snapshot',
+    dataNote: MUNICIPALITY_DATA_NOTE,
+    verifiedDate: '2026-04-08',
   },
   {
     id: 'walkersville',
@@ -89,11 +91,11 @@ export const municipalities: Municipality[] = [
     medianAge: 39.2,
     area: 2.8,
     centroid: [-77.3508, 39.4862],
-    description: 'A growing residential community northeast of Frederick with excellent schools and community events.',
+    description: 'A growing residential town northeast of Frederick with established neighborhoods and schools.',
     website: 'https://www.walkersville.org',
-    officials: [
-      { name: 'Chad Weddle', title: 'Burgess' },
-    ],
+    sourceId: 'manual-municipality-snapshot',
+    dataNote: MUNICIPALITY_DATA_NOTE,
+    verifiedDate: '2026-04-08',
   },
   {
     id: 'myersville',
@@ -104,8 +106,11 @@ export const municipalities: Municipality[] = [
     medianAge: 42.1,
     area: 1.2,
     centroid: [-77.5667, 39.5053],
-    description: 'A small mountain town west of Frederick, nestled in the Catoctin Mountains along I-70.',
+    description: 'A small mountain town west of Frederick along the South Mountain corridor.',
     website: 'https://www.myersvillemd.gov',
+    sourceId: 'manual-municipality-snapshot',
+    dataNote: MUNICIPALITY_DATA_NOTE,
+    verifiedDate: '2026-04-08',
   },
   {
     id: 'woodsboro',
@@ -116,8 +121,11 @@ export const municipalities: Municipality[] = [
     medianAge: 38.9,
     area: 0.7,
     centroid: [-77.3147, 39.5328],
-    description: 'A quiet agricultural town in eastern Frederick County with historic roots dating to 1786.',
+    description: 'A small eastern Frederick County town with agricultural roots and a compact historic center.',
     website: 'https://www.woodsboro.org',
+    sourceId: 'manual-municipality-snapshot',
+    dataNote: MUNICIPALITY_DATA_NOTE,
+    verifiedDate: '2026-04-08',
   },
   {
     id: 'new-market',
@@ -128,8 +136,11 @@ export const municipalities: Municipality[] = [
     medianAge: 41.3,
     area: 1.4,
     centroid: [-77.2736, 39.3889],
-    description: 'Known as the "Antiques Capital of Maryland," a charming town with shops along Main Street.',
+    description: 'A historic Main Street town in eastern Frederick County with strong heritage branding.',
     website: 'https://www.townofnewmarket.org',
+    sourceId: 'manual-municipality-snapshot',
+    dataNote: MUNICIPALITY_DATA_NOTE,
+    verifiedDate: '2026-04-08',
   },
   {
     id: 'mount-airy',
@@ -140,8 +151,11 @@ export const municipalities: Municipality[] = [
     medianAge: 39.6,
     area: 4.1,
     centroid: [-77.1547, 39.3761],
-    description: 'Straddles the Frederick-Carroll county line. A growing suburban community with strong schools.',
-    website: 'https://www.mountairymd.org',
+    description: 'A cross-county municipality spanning the Frederick and Carroll line.',
+    website: 'https://www.mountairymd.gov',
+    sourceId: 'manual-municipality-snapshot',
+    dataNote: MUNICIPALITY_DATA_NOTE,
+    verifiedDate: '2026-04-08',
   },
   {
     id: 'burkittsville',
@@ -152,7 +166,10 @@ export const municipalities: Municipality[] = [
     medianAge: 45.8,
     area: 0.2,
     centroid: [-77.6278, 39.3953],
-    description: 'A tiny historic village at the base of South Mountain, site of Civil War battles at Crampton\'s Gap.',
+    description: 'A small historic town at the base of South Mountain near Crampton’s Gap.',
+    sourceId: 'manual-municipality-snapshot',
+    dataNote: MUNICIPALITY_DATA_NOTE,
+    verifiedDate: '2026-04-08',
   },
   {
     id: 'rosemont',
@@ -164,36 +181,23 @@ export const municipalities: Municipality[] = [
     area: 0.1,
     centroid: [-77.4272, 39.4325],
     description: 'A small incorporated village adjacent to the City of Frederick.',
+    sourceId: 'manual-municipality-snapshot',
+    dataNote: MUNICIPALITY_DATA_NOTE,
+    verifiedDate: '2026-04-08',
   },
 ];
 
-// Simplified municipality boundary polygons (approximate)
-// In production these would come from Census TIGER/Line or County GIS
-export const municipalityBoundaries: GeoJSON.FeatureCollection = {
+// TODO: Replace this centroid-only fallback with official county or Census municipality geometry.
+// A point reference is less misleading than the previous generated polygons, but it is still not
+// an authoritative municipal boundary dataset and should not drive jurisdiction lookups.
+export const municipalityReferencePoints: GeoJSON.FeatureCollection = {
   type: 'FeatureCollection',
-  features: municipalities.map((m) => ({
+  features: municipalities.map((municipality) => ({
     type: 'Feature' as const,
-    properties: { ...m },
-    geometry: generateApproximateBoundary(m.centroid, m.area),
+    properties: { ...municipality },
+    geometry: {
+      type: 'Point' as const,
+      coordinates: municipality.centroid,
+    },
   })),
 };
-
-function generateApproximateBoundary(
-  centroid: [number, number],
-  areaSqMiles: number
-): GeoJSON.Polygon {
-  const radiusDeg = Math.sqrt(areaSqMiles) * 0.009;
-  const sides = 24;
-  const coords: [number, number][] = [];
-  for (let i = 0; i <= sides; i++) {
-    const angle = (i / sides) * 2 * Math.PI;
-    const jitterX = 1 + (Math.sin(angle * 3) * 0.15) + (Math.cos(angle * 7) * 0.08);
-    const jitterY = 1 + (Math.cos(angle * 5) * 0.12) + (Math.sin(angle * 4) * 0.1);
-    coords.push([
-      centroid[0] + radiusDeg * Math.cos(angle) * jitterX * 1.3,
-      centroid[1] + radiusDeg * Math.sin(angle) * jitterY,
-    ]);
-  }
-  coords[coords.length - 1] = coords[0];
-  return { type: 'Polygon', coordinates: [coords] };
-}

@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { municipalities } from '../../data/municipalities';
 import { mapLayers, layerCategories } from '../../data/layers';
+import { civicWorkflows } from '../../data/workflows';
 import { useAppState } from '../../hooks/useAppState';
 import { useMapFlyTo } from '../../hooks/useMapFlyTo';
 import type { AppState } from '../../types';
+import { productFeatures } from '../../config/features';
 
 interface Command {
   id: string;
@@ -31,7 +33,7 @@ export function CommandPalette() {
       cmds.push({
         id: `muni-${m.id}`,
         label: m.name,
-        description: `Pop. ${m.population.toLocaleString()} · ${m.area} mi²`,
+        description: `Manual demographic snapshot · ${m.area} mi²`,
         icon: '📍',
         category: 'Municipalities',
         action: () => dispatch({ type: 'SELECT_MUNICIPALITY', id: m.id }),
@@ -45,9 +47,11 @@ export function CommandPalette() {
       { content: 'traffic', label: 'Traffic Incidents', icon: '🚗', desc: 'Live Maryland CHART data' },
       { content: 'reports', label: '311 Service Requests', icon: '📢', desc: 'SeeClickFix open issues' },
       { content: 'parking', label: 'Parking', icon: '🅿️', desc: 'ParkMobile zones and garages' },
-      { content: 'civic', label: 'Civic Info', icon: '🏛️', desc: 'Meetings and representatives' },
-      { content: 'rewards', label: 'Rewards & Badges', icon: '⭐', desc: 'Your civic engagement score' },
+      { content: 'civic', label: 'Civic Directory', icon: '🏛️', desc: 'Manual snapshot of meetings and representatives' },
     ];
+    if (productFeatures.experimentalExploration) {
+      panels.push({ content: 'rewards', label: 'Rewards & Badges', icon: '⭐', desc: 'Experimental civic engagement score' });
+    }
     for (const p of panels) {
       cmds.push({
         id: `panel-${p.content}`,
@@ -56,6 +60,23 @@ export function CommandPalette() {
         icon: p.icon,
         category: 'Data Panels',
         action: () => dispatch({ type: 'OPEN_PANEL', content: p.content }),
+      });
+    }
+
+    // Civic workflows
+    for (const workflow of civicWorkflows) {
+      cmds.push({
+        id: `workflow-${workflow.id}`,
+        label: workflow.title,
+        description: `${workflow.sourceSummary} · ${workflow.layerIds.length} layers`,
+        icon: workflow.icon,
+        category: 'Civic Views',
+        action: () => dispatch({
+          type: 'APPLY_WORKFLOW',
+          workflowId: workflow.id,
+          layerIds: workflow.layerIds,
+          summary: workflow.trustNote,
+        }),
       });
     }
 
@@ -159,9 +180,6 @@ export function CommandPalette() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [open, filtered, selectedIndex]);
 
-  // Reset selection on query change
-  useEffect(() => { setSelectedIndex(0); }, [query]);
-
   if (!open) return null;
 
   return (
@@ -180,8 +198,11 @@ export function CommandPalette() {
             ref={inputRef}
             type="text"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search municipalities, layers, data, actions..."
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setSelectedIndex(0);
+            }}
+            placeholder="Search civic views, municipalities, layers, data, actions..."
             className="flex-1 bg-transparent text-base text-text placeholder-text-muted outline-none"
           />
           <kbd className="hidden sm:inline-flex items-center gap-1 rounded bg-bg-surface border border-border px-1.5 py-0.5 text-[10px] text-text-muted">

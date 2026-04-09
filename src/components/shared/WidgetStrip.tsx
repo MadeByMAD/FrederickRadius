@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { useWeather } from '../../hooks/useWeather';
 import { useWaterLevels } from '../../hooks/useWaterLevels';
 import { getWeatherEmoji } from '../../services/api/weather';
-import { getWaterLevelStatus } from '../../services/api/water';
 import { useAppState } from '../../hooks/useAppState';
 import { upcomingMeetings } from '../../data/civic';
 
@@ -47,7 +46,7 @@ export function WidgetStrip() {
         icon: '⚠️',
         label: 'Alert',
         value: alerts[0].event,
-        detail: 'Active weather alert',
+        detail: 'NWS weather alert',
         color: '#F59E0B',
         onClick: () => dispatch({ type: 'OPEN_PANEL', content: 'weather' }),
       });
@@ -66,7 +65,7 @@ export function WidgetStrip() {
         icon: '🏛️',
         label: daysUntil === 0 ? 'Today' : daysUntil === 1 ? 'Tomorrow' : `${daysUntil}d`,
         value: nextMeeting.title.replace('County Council ', '').replace(' Session', ''),
-        detail: `${nextMeeting.time} · ${meetDate.toLocaleDateString('en-US', { weekday: 'short' })}`,
+        detail: `Manual civic snapshot · ${nextMeeting.time}`,
         color: '#8B5CF6',
         onClick: () => dispatch({ type: 'OPEN_PANEL', content: 'civic' }),
       });
@@ -82,14 +81,13 @@ export function WidgetStrip() {
         .sort((a, b) => b.height - a.height)[0];
 
       if (withHeight) {
-        const status = getWaterLevelStatus(withHeight.height);
         w.push({
           id: 'water',
           icon: '💧',
-          label: status.label,
+          label: 'USGS',
           value: `${withHeight.height.toFixed(1)} ft`,
           detail: withHeight.name.split(' at ')[0] || 'Stream gauge',
-          color: status.color,
+          color: '#06B6D4',
           onClick: () => dispatch({ type: 'OPEN_PANEL', content: 'water' }),
         });
       }
@@ -98,9 +96,9 @@ export function WidgetStrip() {
     // Time of day suggestion
     const hour = now.getHours();
     if (hour >= 6 && hour < 10) {
-      w.push({ id: 'suggest', icon: '☀️', label: 'Morning', value: 'Farmers Markets', detail: 'Open today nearby', color: '#F59E0B', onClick: () => dispatch({ type: 'TOGGLE_LAYER', layerId: 'farmers-markets' }) });
+      w.push({ id: 'suggest', icon: '☀️', label: 'Morning', value: 'Farmers Markets', detail: 'Reference layer', color: '#F59E0B', onClick: () => dispatch({ type: 'TOGGLE_LAYER', layerId: 'farmers-markets' }) });
     } else if (hour >= 17 && hour < 21) {
-      w.push({ id: 'suggest', icon: '🍽️', label: 'Evening', value: 'Dining spots', detail: '250+ licensed venues', color: '#EC4899', onClick: () => dispatch({ type: 'TOGGLE_LAYER', layerId: 'liquor' }) });
+      w.push({ id: 'suggest', icon: '🍽️', label: 'Evening', value: 'Liquor-licensed venues', detail: 'County reference layer', color: '#EC4899', onClick: () => dispatch({ type: 'TOGGLE_LAYER', layerId: 'liquor' }) });
     }
 
     return w;

@@ -20,11 +20,11 @@ export function MunicipalityCard({ municipality: m, isSelected, onSelect }: Prop
         <div className="min-w-0">
           <h4 className="truncate text-sm font-medium text-text">{m.name}</h4>
           <p className="mt-0.5 text-xs text-text-secondary">
-            Pop. {m.population.toLocaleString()} &middot; {m.area} mi²
+            Population snapshot {m.population.toLocaleString()} &middot; {m.area} mi²
           </p>
         </div>
-        <div className="flex-shrink-0 rounded bg-bg-elevated px-1.5 py-0.5 text-xs text-accent">
-          ${(m.medianIncome / 1000).toFixed(0)}k
+        <div className="flex-shrink-0 rounded border border-border bg-bg-elevated px-1.5 py-0.5 text-[10px] text-text-muted">
+          Manual ref
         </div>
       </div>
     </button>

@@ -7,6 +7,7 @@ export function useWeather() {
   const [alerts, setAlerts] = useState<WeatherAlert[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [loadedAt, setLoadedAt] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -19,6 +20,7 @@ export function useWeather() {
         if (!cancelled) {
           setForecast(f);
           setAlerts(a);
+          setLoadedAt(Date.now());
         }
       } catch (err) {
         if (!cancelled) {
@@ -34,5 +36,5 @@ export function useWeather() {
     return () => { cancelled = true; clearInterval(interval); };
   }, []);
 
-  return { forecast, alerts, loading, error };
+  return { forecast, alerts, loading, error, loadedAt };
 }

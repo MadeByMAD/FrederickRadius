@@ -6,11 +6,10 @@ import { SearchBar } from './SearchBar';
 
 interface Props {
   onOpenPanel: (content: 'weather' | 'water' | 'civic' | 'rewards' | 'traffic' | 'reports' | 'parking' | 'compare' | 'dashboard') => void;
-  points: number;
   onStartTour?: () => void;
 }
 
-export function Sidebar({ onOpenPanel, points, onStartTour }: Props) {
+export function Sidebar({ onOpenPanel, onStartTour }: Props) {
   const { state, dispatch } = useAppState();
 
   return (
@@ -32,13 +31,9 @@ export function Sidebar({ onOpenPanel, points, onStartTour }: Props) {
               <p className="text-xs text-text-muted">Frederick County, Maryland</p>
             </div>
           </div>
-          <button
-            onClick={() => onOpenPanel('rewards')}
-            className="flex items-center gap-1.5 rounded-full bg-bg-surface border border-border px-2.5 py-1 text-xs font-medium text-accent hover:bg-bg-hover transition-colors"
-          >
-            <span>⭐</span>
-            {points} pts
-          </button>
+          <div className="rounded-full border border-border bg-bg-surface px-2.5 py-1 text-[10px] font-medium text-text-muted">
+            Trust-first build
+          </div>
         </div>
         <div className="mt-3">
           <SearchBar />
@@ -54,9 +49,8 @@ export function Sidebar({ onOpenPanel, points, onStartTour }: Props) {
           <QuickAction icon="🏛️" label="Civic" onClick={() => onOpenPanel('civic')} />
           <QuickAction icon="📢" label="311" onClick={() => onOpenPanel('reports')} />
           <QuickAction icon="🅿️" label="Parking" onClick={() => onOpenPanel('parking')} />
-          <QuickAction icon="⚔️" label="Compare" onClick={() => onOpenPanel('compare')} />
+          <QuickAction icon="⚖️" label="Compare" onClick={() => onOpenPanel('compare')} />
           <QuickAction icon="📊" label="Dashboard" onClick={() => onOpenPanel('dashboard')} />
-          <QuickAction icon="⭐" label="Rewards" onClick={() => onOpenPanel('rewards')} />
         </div>
         <div className="mt-1.5 grid grid-cols-1">
           <QuickAction icon="📑" label="Map Layers" onClick={() => {
@@ -102,7 +96,7 @@ export function Sidebar({ onOpenPanel, points, onStartTour }: Props) {
           </button>
         )}
         <div className="text-center text-[10px] text-text-muted">
-          500+ data sources · Frederick County GIS, NWS, USGS, Census, CHART
+          Official feeds and manual reference data are intentionally shown with different trust levels.
         </div>
       </div>
     </div>

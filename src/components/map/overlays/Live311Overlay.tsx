@@ -2,7 +2,12 @@ import { useState, useEffect } from 'react';
 import { Source, Layer } from 'react-map-gl/mapbox';
 import { fetch311Issues } from '../../../services/api/seeclickfix';
 
-export function Live311Overlay(_props: { onPopup: (info: { lng: number; lat: number; html: string } | null) => void }) {
+interface OverlayProps {
+  onPopup: (info: { lng: number; lat: number; html: string } | null) => void;
+}
+
+export function Live311Overlay({ onPopup }: OverlayProps) {
+  void onPopup;
   const [issues, setIssues] = useState<GeoJSON.FeatureCollection | null>(null);
 
   useEffect(() => {

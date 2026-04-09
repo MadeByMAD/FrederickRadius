@@ -1,5 +1,6 @@
 import { dataManifest } from '../../data/data-manifest';
 import { useMapFlyTo } from '../../hooks/useMapFlyTo';
+import { DataStatusNotice } from '../shared/DataStatusNotice';
 
 export function ParkingPanel() {
   const garages = dataManifest.parking.garages;
@@ -7,6 +8,11 @@ export function ParkingPanel() {
 
   return (
     <div className="space-y-3">
+      <DataStatusNotice
+        sourceId="manual-parking-reference"
+        detail="Parking guidance in this panel is a manual reference. Real-time garage availability and enforcement status are not integrated."
+      />
+
       <div className="rounded-lg border border-accent/30 bg-accent/5 p-3">
         <div className="flex items-center gap-2 text-sm font-medium text-accent">
           <span>&#x1F17F;&#xFE0F;</span> ParkMobile Only
@@ -53,7 +59,7 @@ export function ParkingPanel() {
       </div>
 
       <div className="text-xs text-text-muted text-center">
-        Garage real-time availability via Park Frederick app (ParkZen)
+        Garage availability is not integrated in this app yet. Use official City parking tools to confirm current conditions.
       </div>
     </div>
   );

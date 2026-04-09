@@ -10,8 +10,9 @@ interface ActivityItem {
   text: string;
   detail: string;
   time: string;
+  timestamp: number;
   color: string;
-  source: string;
+  source: 'SeeClickFix' | 'CHART';
   lat?: number;
   lng?: number;
 }
@@ -20,6 +21,7 @@ export function LiveActivityFeed() {
   const [items, setItems] = useState<ActivityItem[]>([]);
   const [visible, setVisible] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadedAt, setLoadedAt] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { dispatch } = useAppState();
   const { flyTo: mapFlyTo } = useMapFlyTo();
@@ -32,45 +34,48 @@ export function LiveActivityFeed() {
       try {
         const issues = await fetch311Issues();
         for (const issue of issues.slice(0, 15)) {
+          const timestamp = new Date(issue.created_at).getTime();
           activities.push({
             id: `311-${issue.id}`,
             icon: issue.status === 'open' ? '🔴' : '🟡',
             text: issue.summary || 'Service Request',
             detail: issue.request_type?.title || 'General',
             time: timeAgo(issue.created_at),
+            timestamp,
             color: issue.status === 'open' ? '#EF4444' : '#F59E0B',
-            source: '311',
+            source: 'SeeClickFix',
             lat: issue.lat,
             lng: issue.lng,
           });
         }
-      } catch { /* ignore */ }
+      } catch {
+        // Surface remains intentionally partial if one source fails.
+      }
 
       try {
-        const incidents = await fetchTrafficIncidents();
+        const { incidents } = await fetchTrafficIncidents();
         for (const inc of incidents.slice(0, 10)) {
+          const timestamp = inc.startDate ? new Date(inc.startDate).getTime() : 0;
           activities.push({
             id: `traffic-${inc.id}`,
             icon: '🚧',
             text: inc.type,
             detail: inc.road || inc.location || '',
             time: inc.startDate ? timeAgo(inc.startDate) : 'Active',
+            timestamp,
             color: '#F97316',
-            source: 'Traffic',
+            source: 'CHART',
             lat: inc.latitude,
             lng: inc.longitude,
           });
         }
-      } catch { /* ignore */ }
+      } catch {
+        // Surface remains intentionally partial if one source fails.
+      }
 
-      // Sort by most recent
-      activities.sort((a, b) => {
-        if (a.time.includes('min') && b.time.includes('hr')) return -1;
-        if (a.time.includes('hr') && b.time.includes('min')) return 1;
-        return 0;
-      });
-
+      activities.sort((a, b) => b.timestamp - a.timestamp);
       setItems(activities);
+      setLoadedAt(Date.now());
       setLoading(false);
     }
 
@@ -83,8 +88,8 @@ export function LiveActivityFeed() {
     if (item.lat && item.lng) {
       mapFlyTo(item.lng, item.lat, 15);
     }
-    if (item.source === '311') dispatch({ type: 'OPEN_PANEL', content: 'reports' });
-    if (item.source === 'Traffic') dispatch({ type: 'OPEN_PANEL', content: 'traffic' });
+    if (item.source === 'SeeClickFix') dispatch({ type: 'OPEN_PANEL', content: 'reports' });
+    if (item.source === 'CHART') dispatch({ type: 'OPEN_PANEL', content: 'traffic' });
   }
 
   return (
@@ -97,7 +102,7 @@ export function LiveActivityFeed() {
           <span className="animate-ping absolute h-full w-full rounded-full bg-accent opacity-75" />
           <span className="relative h-2 w-2 rounded-full bg-accent" />
         </span>
-        <span className="text-xs text-text-secondary">Live Feed</span>
+        <span className="text-xs text-text-secondary">Selected Feeds</span>
         {items.length > 0 && (
           <span className="rounded-full bg-accent/20 text-accent text-[10px] font-bold px-1.5">{items.length}</span>
         )}
@@ -105,15 +110,21 @@ export function LiveActivityFeed() {
 
       {visible && (
         <div className="absolute bottom-12 right-0 w-80 rounded-2xl glass shadow-2xl overflow-hidden animate-fade-up">
-          <div className="px-4 py-3 border-b border-border/50 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute h-full w-full rounded-full bg-success opacity-75" />
-                <span className="relative h-2 w-2 rounded-full bg-success" />
-              </span>
-              <span className="text-xs font-semibold text-text">Live Activity</span>
+          <div className="border-b border-border/50 px-4 py-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute h-full w-full rounded-full bg-success opacity-75" />
+                  <span className="relative h-2 w-2 rounded-full bg-success" />
+                </span>
+                <span className="text-xs font-semibold text-text">Selected Feed Activity</span>
+              </div>
+              <span className="text-[10px] text-text-muted">{items.length} events</span>
             </div>
-            <span className="text-[10px] text-text-muted">{items.length} events</span>
+            <div className="mt-1 text-[10px] leading-4 text-text-muted">
+              CHART traffic and SeeClickFix reports only. This is not a countywide public-safety or 911 feed.
+              {loadedAt ? ` Refreshed ${new Date(loadedAt).toLocaleTimeString()}.` : null}
+            </div>
           </div>
 
           <div ref={scrollRef} className="max-h-72 overflow-y-auto">
@@ -123,7 +134,9 @@ export function LiveActivityFeed() {
                 <p className="mt-2 text-xs text-text-muted">Loading activity...</p>
               </div>
             ) : items.length === 0 ? (
-              <div className="p-6 text-center text-xs text-text-muted">No recent activity</div>
+              <div className="p-6 text-center text-xs text-text-muted">
+                No recent events from the currently integrated CHART and SeeClickFix feeds.
+              </div>
             ) : (
               items.map((item) => (
                 <button
@@ -148,6 +161,10 @@ export function LiveActivityFeed() {
                 </button>
               ))
             )}
+          </div>
+
+          <div className="border-t border-border/40 px-4 py-2 text-[10px] text-text-muted">
+            Coverage is partial. Open the source panels for details and limitations.
           </div>
         </div>
       )}

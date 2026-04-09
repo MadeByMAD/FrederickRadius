@@ -1,4 +1,5 @@
-import { upcomingMeetings } from '../../data/civic';
+import { upcomingMeetings, MEETING_SNAPSHOT_NOTE } from '../../data/civic';
+import { DataTrustBadge } from '../shared/DataTrustBadge';
 
 const TYPE_COLORS: Record<string, string> = {
   council: '#3B82F6',
@@ -23,6 +24,16 @@ export function MeetingCalendar() {
 
   return (
     <div className="space-y-3">
+      <div className="rounded-lg border border-border bg-bg-surface p-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-text-secondary">
+            Calendar Status
+          </div>
+          <DataTrustBadge confidence="reference" />
+        </div>
+        <div className="mt-2 text-xs leading-5 text-text-secondary">{MEETING_SNAPSHOT_NOTE}</div>
+      </div>
+
       <div className="flex items-center gap-3 flex-wrap">
         {Object.entries(TYPE_LABELS).map(([key, label]) => (
           <div key={key} className="flex items-center gap-1.5 text-xs text-text-muted">
@@ -44,8 +55,8 @@ export function MeetingCalendar() {
                 isToday
                   ? 'border-accent/50 bg-accent/5'
                   : isPast
-                  ? 'border-border/50 bg-bg-surface/50 opacity-60'
-                  : 'border-border bg-bg-surface'
+                    ? 'border-border/50 bg-bg-surface/50 opacity-60'
+                    : 'border-border bg-bg-surface'
               }`}
             >
               <div className="flex items-start gap-2">
@@ -64,7 +75,7 @@ export function MeetingCalendar() {
                   </div>
                   <div className="mt-1 flex items-center gap-3 text-xs text-text-muted">
                     <span>
-                      {new Date(meeting.date + 'T00:00:00').toLocaleDateString('en-US', {
+                      {new Date(`${meeting.date}T00:00:00`).toLocaleDateString('en-US', {
                         weekday: 'short',
                         month: 'short',
                         day: 'numeric',
@@ -73,6 +84,21 @@ export function MeetingCalendar() {
                     <span>{meeting.time}</span>
                   </div>
                   <div className="mt-0.5 text-xs text-text-muted truncate">{meeting.location}</div>
+                  <div className="mt-2 flex items-center justify-between gap-2">
+                    <div className="text-[10px] text-text-muted">
+                      {meeting.verifiedDate ? `Verified ${meeting.verifiedDate}` : 'Manual reference'}
+                    </div>
+                    {meeting.sourceUrl && (
+                      <a
+                        href={meeting.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[10px] font-medium text-accent hover:text-accent-hover"
+                      >
+                        Official calendar
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
