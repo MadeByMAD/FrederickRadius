@@ -6,6 +6,7 @@ export function useWaterLevels() {
   const [gauges, setGauges] = useState<WaterGauge[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -15,7 +16,10 @@ export function useWaterLevels() {
         setLoading(true);
         setError(null);
         const data = await fetchWaterLevels();
-        if (!cancelled) setGauges(data);
+        if (!cancelled) {
+          setGauges(data);
+          setUpdatedAt(new Date());
+        }
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : 'Failed to load water data');
       } finally {
@@ -28,5 +32,5 @@ export function useWaterLevels() {
     return () => { cancelled = true; clearInterval(interval); };
   }, []);
 
-  return { gauges, loading, error };
+  return { gauges, loading, error, updatedAt };
 }

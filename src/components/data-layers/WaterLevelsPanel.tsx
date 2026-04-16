@@ -1,19 +1,40 @@
 import { useWaterLevels } from '../../hooks/useWaterLevels';
 import { getWaterLevelStatus } from '../../services/api/water';
 import { SkeletonGauges } from '../shared/Skeleton';
+import { SourceChip } from '../shared/SourceChip';
 
 export function WaterLevelsPanel() {
-  const { gauges, loading, error } = useWaterLevels();
+  const { gauges, loading, error, updatedAt } = useWaterLevels();
 
   if (loading) return <SkeletonGauges />;
-  if (error) return <div className="p-3 text-sm text-danger">{error}</div>;
+  if (error) {
+    return (
+      <div className="space-y-3">
+        <div className="rounded-lg border border-danger/30 bg-danger/10 p-3 text-sm text-danger">{error}</div>
+        <SourceChip source="USGS Water Services" url="https://waterservices.usgs.gov" status="error" />
+      </div>
+    );
+  }
 
   if (gauges.length === 0) {
-    return <div className="p-3 text-sm text-text-secondary">No active gauges found</div>;
+    return (
+      <div className="space-y-3">
+        <div className="rounded-lg border border-border bg-bg-surface p-4 text-sm text-text-secondary">
+          No active gauges found.
+        </div>
+        <SourceChip source="USGS Water Services" url="https://waterservices.usgs.gov" updatedAt={updatedAt} />
+      </div>
+    );
   }
 
   return (
     <div className="space-y-3">
+      <SourceChip
+        source="USGS Water Services"
+        url="https://waterservices.usgs.gov"
+        updatedAt={updatedAt}
+        refreshCadence="every 15 min"
+      />
       {gauges.map((gauge) => {
         const heightValues = gauge.values.filter((v) => v.parameterCode === '00065');
         const dischargeValues = gauge.values.filter((v) => v.parameterCode === '00060');
@@ -56,7 +77,7 @@ export function WaterLevelsPanel() {
             {/* Mini sparkline of recent readings */}
             {heightValues.length > 1 && (
               <div className="mt-2">
-                <Sparkline values={heightValues.map((v) => v.value)} color="#06B6D4" />
+                <Sparkline values={heightValues.map((v) => v.value)} color="var(--color-info)" />
               </div>
             )}
 
@@ -68,10 +89,6 @@ export function WaterLevelsPanel() {
           </div>
         );
       })}
-
-      <div className="text-xs text-text-muted text-center">
-        Source: USGS Water Services (waterservices.usgs.gov)
-      </div>
     </div>
   );
 }
