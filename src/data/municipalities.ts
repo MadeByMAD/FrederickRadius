@@ -167,33 +167,3 @@ export const municipalities: Municipality[] = [
   },
 ];
 
-// Simplified municipality boundary polygons (approximate)
-// In production these would come from Census TIGER/Line or County GIS
-export const municipalityBoundaries: GeoJSON.FeatureCollection = {
-  type: 'FeatureCollection',
-  features: municipalities.map((m) => ({
-    type: 'Feature' as const,
-    properties: { ...m },
-    geometry: generateApproximateBoundary(m.centroid, m.area),
-  })),
-};
-
-function generateApproximateBoundary(
-  centroid: [number, number],
-  areaSqMiles: number
-): GeoJSON.Polygon {
-  const radiusDeg = Math.sqrt(areaSqMiles) * 0.009;
-  const sides = 24;
-  const coords: [number, number][] = [];
-  for (let i = 0; i <= sides; i++) {
-    const angle = (i / sides) * 2 * Math.PI;
-    const jitterX = 1 + (Math.sin(angle * 3) * 0.15) + (Math.cos(angle * 7) * 0.08);
-    const jitterY = 1 + (Math.cos(angle * 5) * 0.12) + (Math.sin(angle * 4) * 0.1);
-    coords.push([
-      centroid[0] + radiusDeg * Math.cos(angle) * jitterX * 1.3,
-      centroid[1] + radiusDeg * Math.sin(angle) * jitterY,
-    ]);
-  }
-  coords[coords.length - 1] = coords[0];
-  return { type: 'Polygon', coordinates: [coords] };
-}

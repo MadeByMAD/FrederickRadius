@@ -1,9 +1,10 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import Map, { Source, Layer, Popup, NavigationControl, ScaleControl, GeolocateControl } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { useAppState } from '../../hooks/useAppState';
 import { useTheme } from '../../hooks/useTheme';
-import { municipalityBoundaries, municipalities } from '../../data/municipalities';
+import { useMunicipalityBoundaries } from '../../hooks/useMunicipalityBoundaries';
+import { municipalities } from '../../data/municipalities';
 import { FREDERICK_COUNTY_CENTER, FREDERICK_COUNTY_ZOOM } from '../../data/municipalities';
 import { GISLayerRenderer } from './GISLayerRenderer';
 import { Live311Overlay } from './overlays/Live311Overlay';
@@ -38,11 +39,10 @@ interface MapViewProps {
 export function MapView({ radiusCenter, onCloseRadius }: MapViewProps = {}) {
   const { state, dispatch } = useAppState();
   const { resolved: theme } = useTheme();
+  const { data: muniData } = useMunicipalityBoundaries();
   const [popup, setPopup] = useState<PopupInfo | null>(null);
   const [is3D, setIs3D] = useState(true);
   const [viewState, setViewState] = useState(INITIAL_VIEW);
-
-  const muniData = useMemo(() => municipalityBoundaries, []);
 
   const isDark = theme === 'dark';
   const mapStyle = isDark ? 'mapbox://styles/mapbox/dark-v11' : 'mapbox://styles/mapbox/light-v11';
