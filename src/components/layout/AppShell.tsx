@@ -85,7 +85,9 @@ export function AppShell() {
 
         {/* Full-screen Map */}
         <div className="h-full w-full">
-          <MapView radiusCenter={radiusCenter} onCloseRadius={() => setRadiusCenter(null)} />
+          <ErrorBoundary fallback={<MapErrorFallback />}>
+            <MapView radiusCenter={radiusCenter} onCloseRadius={() => setRadiusCenter(null)} />
+          </ErrorBoundary>
           <CountyPulse />
           {showTour && <GuidedTour onClose={() => setShowTour(false)} />}
 
@@ -204,7 +206,9 @@ export function AppShell() {
 
       {/* Map */}
       <div className="relative flex-1 min-w-0">
-        <MapView radiusCenter={radiusCenter} onCloseRadius={() => setRadiusCenter(null)} />
+        <ErrorBoundary fallback={<MapErrorFallback />}>
+          <MapView radiusCenter={radiusCenter} onCloseRadius={() => setRadiusCenter(null)} />
+        </ErrorBoundary>
         <CountyPulse />
         <LiveActivityFeed />
         {showTour && <GuidedTour onClose={() => setShowTour(false)} />}
@@ -244,6 +248,25 @@ export function AppShell() {
           <SlidePanel />
         )}
       </AnimatePresence>
+    </div>
+  );
+}
+
+function MapErrorFallback() {
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-bg-surface p-6 text-center">
+      <div className="max-w-sm">
+        <div className="text-sm font-medium text-text">The map failed to load</div>
+        <p className="mt-1 text-xs text-text-muted">
+          This usually means the Mapbox token is missing or rate-limited. Check your network and try reloading.
+        </p>
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-4 rounded-full bg-accent px-4 py-1.5 text-xs font-medium text-white hover:bg-accent-hover"
+        >
+          Reload
+        </button>
+      </div>
     </div>
   );
 }
