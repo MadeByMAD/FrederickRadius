@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo } from 'react';
 import Map, { Source, Layer, Popup, NavigationControl, ScaleControl, GeolocateControl } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { useAppState } from '../../hooks/useAppState';
+import { useTheme } from '../../hooks/useTheme';
 import { municipalityBoundaries, municipalities } from '../../data/municipalities';
 import { FREDERICK_COUNTY_CENTER, FREDERICK_COUNTY_ZOOM } from '../../data/municipalities';
 import { GISLayerRenderer } from './GISLayerRenderer';
@@ -36,11 +37,19 @@ interface MapViewProps {
 
 export function MapView({ radiusCenter, onCloseRadius }: MapViewProps = {}) {
   const { state, dispatch } = useAppState();
+  const { resolved: theme } = useTheme();
   const [popup, setPopup] = useState<PopupInfo | null>(null);
   const [is3D, setIs3D] = useState(true);
   const [viewState, setViewState] = useState(INITIAL_VIEW);
 
   const muniData = useMemo(() => municipalityBoundaries, []);
+
+  const isDark = theme === 'dark';
+  const mapStyle = isDark ? 'mapbox://styles/mapbox/dark-v11' : 'mapbox://styles/mapbox/light-v11';
+  const boundaryColor = isDark ? '#D4344A' : '#8B1F2F';
+  const labelColor = isDark ? '#F2EDE3' : '#1A1613';
+  const labelHalo = isDark ? 'rgba(15, 13, 11, 0.9)' : 'rgba(250, 248, 244, 0.9)';
+  const buildingColor = isDark ? '#1A1A2E' : '#D9D2C4';
 
   // Municipality click
   const onMuniClick = useCallback(
@@ -91,7 +100,7 @@ export function MapView({ radiusCenter, onCloseRadius }: MapViewProps = {}) {
         {...viewState}
         onMove={(evt) => setViewState(evt.viewState)}
         mapboxAccessToken={MAPBOX_TOKEN}
-        mapStyle="mapbox://styles/mapbox/dark-v11"
+        mapStyle={mapStyle}
         style={{ width: '100%', height: '100%' }}
         minZoom={8}
         maxZoom={18}
@@ -118,15 +127,15 @@ export function MapView({ radiusCenter, onCloseRadius }: MapViewProps = {}) {
             id="municipality-fills"
             type="fill"
             paint={{
-              'fill-color': '#3B82F6',
-              'fill-opacity': 0.1,
+              'fill-color': boundaryColor,
+              'fill-opacity': isDark ? 0.12 : 0.08,
             }}
           />
           <Layer
             id="municipality-borders"
             type="line"
             paint={{
-              'line-color': '#3B82F6',
+              'line-color': boundaryColor,
               'line-width': 1.5,
               'line-opacity': 0.7,
             }}
@@ -143,8 +152,8 @@ export function MapView({ radiusCenter, onCloseRadius }: MapViewProps = {}) {
               'text-padding': 10,
             }}
             paint={{
-              'text-color': '#F0ECE6',
-              'text-halo-color': 'rgba(10, 10, 10, 0.9)',
+              'text-color': labelColor,
+              'text-halo-color': labelHalo,
               'text-halo-width': 2,
             }}
           />
@@ -158,7 +167,7 @@ export function MapView({ radiusCenter, onCloseRadius }: MapViewProps = {}) {
           type="fill-extrusion"
           minzoom={14}
           paint={{
-            'fill-extrusion-color': '#1A1A2E',
+            'fill-extrusion-color': buildingColor,
             'fill-extrusion-height': ['get', 'height'],
             'fill-extrusion-base': ['get', 'min_height'],
             'fill-extrusion-opacity': 0.6,

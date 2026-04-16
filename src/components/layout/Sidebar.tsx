@@ -27,8 +27,8 @@ export function Sidebar({ onOpenPanel, onStartTour }: Props) {
               </svg>
             </button>
             <div>
-              <h1 className="text-lg font-bold text-text tracking-tight">Frederick Radius</h1>
-              <p className="text-xs text-text-muted">Frederick County, Maryland</p>
+              <h1 className="font-display text-xl font-semibold text-text leading-none">Frederick Radius</h1>
+              <p className="mt-1 text-xs text-text-muted">Frederick County, Maryland</p>
             </div>
           </div>
         </div>
@@ -92,8 +92,8 @@ export function Sidebar({ onOpenPanel, onStartTour }: Props) {
             <span>🧭</span> Take a Tour of Frederick County
           </button>
         )}
-        <div className="text-center text-[10px] text-text-muted">
-          500+ data sources · Frederick County GIS, NWS, USGS, Census, CHART
+        <div className="text-center text-[11px] leading-snug text-text-muted">
+          Data from Frederick County GIS, NWS, USGS, Census, and Maryland CHART.
         </div>
       </div>
     </div>

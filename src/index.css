@@ -1,21 +1,104 @@
 @import "tailwindcss";
 @import "mapbox-gl/dist/mapbox-gl.css";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Daylight Civic — Frederick Radius design tokens
+ *
+ * Light is the default; `.dark` on <html> swaps the palette. Every
+ * Tailwind utility that references these tokens (bg-bg, text-text,
+ * border-border, etc.) adapts automatically.
+ */
 @theme {
-  --color-bg: #0A0A0A;
-  --color-bg-elevated: #141414;
-  --color-bg-surface: #1A1A1A;
-  --color-bg-hover: #222222;
-  --color-border: #2A2A2A;
-  --color-text: #F0ECE6;
-  --color-text-secondary: #9CA3AF;
-  --color-text-muted: #6B7280;
-  --color-accent: #3B82F6;
-  --color-accent-hover: #2563EB;
-  --color-success: #10B981;
-  --color-warning: #F59E0B;
-  --color-danger: #EF4444;
-  --font-family-sans: "Inter", system-ui, -apple-system, sans-serif;
+  /* Surfaces */
+  --color-bg: #FAF8F4;
+  --color-bg-elevated: #FFFFFF;
+  --color-bg-surface: #F4F1EC;
+  --color-bg-hover: #ECE7DD;
+
+  /* Borders */
+  --color-border: #E6E1D7;
+  --color-border-strong: #CFC8B8;
+
+  /* Text */
+  --color-text: #1A1613;
+  --color-text-secondary: #5C544A;
+  --color-text-muted: #8B8378;
+
+  /* Brand + intents — Maryland heritage red as the primary civic accent */
+  --color-accent: #8B1F2F;
+  --color-accent-hover: #6F1825;
+  --color-accent-subtle: rgba(139, 31, 47, 0.08);
+  --color-gold: #B8860B;
+  --color-success: #1F7A47;
+  --color-warning: #B45309;
+  --color-danger: #B91C1C;
+  --color-info: #1D4ED8;
+
+  /* Typography */
+  --font-family-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-family-display: "Fraunces", "Times New Roman", Georgia, serif;
+
+  /* Elevation */
+  --shadow-surface-1: 0 1px 2px rgba(26, 22, 19, 0.04);
+  --shadow-surface-2: 0 2px 6px rgba(26, 22, 19, 0.05), 0 1px 2px rgba(26, 22, 19, 0.04);
+  --shadow-surface-3: 0 12px 32px rgba(26, 22, 19, 0.08), 0 4px 12px rgba(26, 22, 19, 0.06);
+
+  /* Radii */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+}
+
+:root {
+  /* Non-@theme tokens (not turned into utilities) */
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(26, 22, 19, 0.08);
+  --map-label-color: #1A1613;
+  --map-label-halo: rgba(250, 248, 244, 0.9);
+  --skeleton-highlight: rgba(26, 22, 19, 0.06);
+  --focus-ring: 0 0 0 3px rgba(139, 31, 47, 0.25);
+
+  color-scheme: light;
+}
+
+.dark {
+  --color-bg: #0F0D0B;
+  --color-bg-elevated: #1A1612;
+  --color-bg-surface: #211C17;
+  --color-bg-hover: #2A241E;
+
+  --color-border: #33291F;
+  --color-border-strong: #4A3B2E;
+
+  --color-text: #F2EDE3;
+  --color-text-secondary: #B8AE9C;
+  --color-text-muted: #7A7262;
+
+  --color-accent: #D4344A;
+  --color-accent-hover: #E64560;
+  --color-accent-subtle: rgba(212, 52, 74, 0.12);
+  --color-gold: #E0AC3F;
+  --color-success: #4ADE80;
+  --color-warning: #FCD34D;
+  --color-danger: #F87171;
+  --color-info: #60A5FA;
+
+  --shadow-surface-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-surface-2: 0 2px 8px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-surface-3: 0 12px 32px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.5);
+
+  --glass-bg: rgba(26, 22, 19, 0.75);
+  --glass-border: rgba(242, 237, 227, 0.08);
+  --map-label-color: #F2EDE3;
+  --map-label-halo: rgba(15, 13, 11, 0.9);
+  --skeleton-highlight: rgba(255, 255, 255, 0.04);
+  --focus-ring: 0 0 0 3px rgba(212, 52, 74, 0.35);
+
+  color-scheme: dark;
 }
 
 html, body, #root {
@@ -29,74 +112,81 @@ body {
   font-family: var(--font-family-sans);
   background-color: var(--color-bg);
   color: var(--color-text);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--color-bg); }
-::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+/* Display type — use sparingly for municipality names, hero numbers, section leads. */
+.font-display {
+  font-family: var(--font-family-display);
+  font-feature-settings: "ss01", "ss02";
+  letter-spacing: -0.02em;
+}
+
+/* Focus: visible + branded, not the default browser outline. */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-sm);
+}
+
+::selection {
+  background: var(--color-accent-subtle);
+  color: var(--color-text);
+}
+
+/* Scrollbars */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-border-strong); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--color-text-muted); }
 
+/* Mapbox popup/controls theming */
 .mapboxgl-popup-content {
   background: var(--color-bg-elevated) !important;
   color: var(--color-text) !important;
   border: 1px solid var(--color-border) !important;
-  border-radius: 8px !important;
+  border-radius: 12px !important;
   padding: 12px !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+  box-shadow: var(--shadow-surface-3) !important;
 }
 .mapboxgl-popup-tip { border-top-color: var(--color-bg-elevated) !important; }
 .mapboxgl-popup-close-button { color: var(--color-text-secondary) !important; font-size: 18px !important; }
-.mapboxgl-ctrl-group { background: var(--color-bg-elevated) !important; border: 1px solid var(--color-border) !important; }
-.mapboxgl-ctrl-group button { filter: invert(1); }
-.mapboxgl-ctrl-attrib { background: rgba(10,10,10,0.7) !important; color: var(--color-text-muted) !important; }
+.mapboxgl-ctrl-group {
+  background: var(--color-bg-elevated) !important;
+  border: 1px solid var(--color-border) !important;
+  box-shadow: var(--shadow-surface-1) !important;
+}
+.dark .mapboxgl-ctrl-group button { filter: invert(1); }
+.mapboxgl-ctrl-attrib {
+  background: rgba(250, 248, 244, 0.85) !important;
+  color: var(--color-text-muted) !important;
+}
+.dark .mapboxgl-ctrl-attrib {
+  background: rgba(15, 13, 11, 0.75) !important;
+}
 .mapboxgl-ctrl-attrib a { color: var(--color-text-secondary) !important; }
 
 @keyframes slide-in {
   from { transform: translateX(100%); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
 }
-.animate-slide-in {
-  animation: slide-in 0.2s ease-out;
-}
+.animate-slide-in { animation: slide-in 0.2s ease-out; }
 
 @keyframes fade-up {
   from { transform: translateY(8px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
-.animate-fade-up {
-  animation: fade-up 0.3s ease-out;
-}
+.animate-fade-up { animation: fade-up 0.3s ease-out; }
 
-@keyframes glow-pulse {
-  0%, 100% { box-shadow: 0 0 8px rgba(59, 130, 246, 0.3); }
-  50% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
-}
-.animate-glow {
-  animation: glow-pulse 3s ease-in-out infinite;
-}
-
-/* Glassmorphism utility */
+/* Glassmorphism utility — adapts to light/dark via CSS vars. */
 .glass {
-  background: rgba(20, 20, 20, 0.8);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-/* Gradient border glow */
-.glow-border {
-  position: relative;
-}
-.glow-border::before {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  background: linear-gradient(135deg, rgba(59,130,246,0.3), rgba(16,185,129,0.3), rgba(59,130,246,0.1));
-  z-index: -1;
-  opacity: 0.5;
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px) saturate(1.1);
+  -webkit-backdrop-filter: blur(16px) saturate(1.1);
+  border: 1px solid var(--glass-border);
 }
 
 /* Line clamp */
@@ -106,3 +196,12 @@ body {
 
 .scrollbar-none { scrollbar-width: none; -ms-overflow-style: none; }
 .scrollbar-none::-webkit-scrollbar { display: none; }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,11 +1,16 @@
 import { Source, Layer } from 'react-map-gl/mapbox';
 import { useAppState } from '../../hooks/useAppState';
 import { useGISLayer } from '../../hooks/useGISLayer';
+import { useTheme } from '../../hooks/useTheme';
 import type { MapLayer } from '../../types';
 
 export function GISLayerRenderer() {
   const { layers, state } = useAppState();
+  const { resolved: theme } = useTheme();
   const visibleLayers = layers.filter((l) => l.visible);
+
+  const strokeColor = theme === 'dark' ? '#0F0D0B' : '#FFFFFF';
+  const clusterLabelColor = theme === 'dark' ? '#F2EDE3' : '#1A1613';
 
   return (
     <>
@@ -14,13 +19,25 @@ export function GISLayerRenderer() {
           key={layer.id}
           layer={layer}
           opacity={(state.layerOpacity[layer.id] ?? 100) / 100}
+          strokeColor={strokeColor}
+          clusterLabelColor={clusterLabelColor}
         />
       ))}
     </>
   );
 }
 
-function GISLayer({ layer, opacity }: { layer: MapLayer; opacity: number }) {
+function GISLayer({
+  layer,
+  opacity,
+  strokeColor,
+  clusterLabelColor,
+}: {
+  layer: MapLayer;
+  opacity: number;
+  strokeColor: string;
+  clusterLabelColor: string;
+}) {
   const { data } = useGISLayer(layer.endpoint, true);
   if (!data) return null;
 
@@ -37,7 +54,7 @@ function GISLayer({ layer, opacity }: { layer: MapLayer; opacity: number }) {
             'circle-color': layer.color,
             'circle-radius': ['step', ['get', 'point_count'], 15, 10, 20, 50, 25],
             'circle-opacity': 0.7 * opacity,
-            'circle-stroke-color': '#0A0A0A',
+            'circle-stroke-color': strokeColor,
             'circle-stroke-width': 2,
           }}
         />
@@ -50,7 +67,7 @@ function GISLayer({ layer, opacity }: { layer: MapLayer; opacity: number }) {
             'text-font': ['DIN Pro Medium', 'Arial Unicode MS Bold'],
             'text-size': 12,
           }}
-          paint={{ 'text-color': '#F0ECE6', 'text-opacity': opacity }}
+          paint={{ 'text-color': clusterLabelColor, 'text-opacity': opacity }}
         />
         <Layer
           id={`${sourceId}-points`}
@@ -59,7 +76,7 @@ function GISLayer({ layer, opacity }: { layer: MapLayer; opacity: number }) {
           paint={{
             'circle-radius': ['interpolate', ['linear'], ['zoom'], 8, 3, 14, 7],
             'circle-color': layer.color,
-            'circle-stroke-color': '#0A0A0A',
+            'circle-stroke-color': strokeColor,
             'circle-stroke-width': 1.5,
             'circle-opacity': 0.9 * opacity,
           }}

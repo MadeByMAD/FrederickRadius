@@ -12,7 +12,8 @@ function SkeletonBase({ className = '' }: { className?: string }) {
     <motion.div
       className={`rounded bg-bg-hover ${className}`}
       style={{
-        backgroundImage: 'linear-gradient(90deg, transparent 30%, rgba(255,255,255,0.04) 50%, transparent 70%)',
+        backgroundImage:
+          'linear-gradient(90deg, transparent 30%, var(--skeleton-highlight) 50%, transparent 70%)',
         backgroundSize: '200% 100%',
       }}
       animate={shimmer.animate}
