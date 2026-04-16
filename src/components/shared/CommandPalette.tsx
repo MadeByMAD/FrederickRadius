@@ -1,17 +1,50 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, type ComponentType, type ReactNode } from 'react';
+import {
+  BarChart3,
+  CloudSun,
+  CornerDownLeft,
+  Droplets,
+  Landmark,
+  Layers,
+  MapPin,
+  Megaphone,
+  Mountain,
+  RotateCcw,
+  Search,
+  SquareParking,
+  TrafficCone,
+} from 'lucide-react';
 import { municipalities } from '../../data/municipalities';
 import { mapLayers, layerCategories } from '../../data/layers';
 import { useAppState } from '../../hooks/useAppState';
 import { useMapFlyTo } from '../../hooks/useMapFlyTo';
 import type { AppState } from '../../types';
 
+type LucideIcon = ComponentType<{ className?: string; strokeWidth?: number }>;
+
 interface Command {
   id: string;
   label: string;
   description: string;
-  icon: string;
+  icon: ReactNode;
   category: string;
   action: () => void;
+}
+
+function Glyph({ Icon }: { Icon: LucideIcon }) {
+  return (
+    <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md bg-bg-surface text-text-secondary">
+      <Icon className="h-3.5 w-3.5" strokeWidth={1.75} />
+    </span>
+  );
+}
+
+function EmojiGlyph({ char }: { char: string }) {
+  return (
+    <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md bg-bg-surface text-sm">
+      {char}
+    </span>
+  );
 }
 
 export function CommandPalette() {
@@ -32,40 +65,47 @@ export function CommandPalette() {
         id: `muni-${m.id}`,
         label: m.name,
         description: `Pop. ${m.population.toLocaleString()} · ${m.area} mi²`,
-        icon: '📍',
+        icon: <Glyph Icon={MapPin} />,
         category: 'Municipalities',
         action: () => dispatch({ type: 'SELECT_MUNICIPALITY', id: m.id }),
       });
     }
 
     // Panels
-    const panels: Array<{ content: AppState['slidePanelContent']; label: string; icon: string; desc: string }> = [
-      { content: 'weather', label: 'Weather Forecast', icon: '🌤️', desc: 'NWS 7-day forecast and alerts' },
-      { content: 'water', label: 'Stream Gauges', icon: '💧', desc: '9 USGS water level monitors' },
-      { content: 'traffic', label: 'Traffic Incidents', icon: '🚗', desc: 'Live Maryland CHART data' },
-      { content: 'reports', label: '311 Service Requests', icon: '📢', desc: 'SeeClickFix open issues' },
-      { content: 'parking', label: 'Parking', icon: '🅿️', desc: 'ParkMobile zones and garages' },
-      { content: 'civic', label: 'Civic Info', icon: '🏛️', desc: 'Meetings and representatives' },
+    const panels: Array<{
+      content: AppState['slidePanelContent'];
+      label: string;
+      Icon: LucideIcon;
+      desc: string;
+    }> = [
+      { content: 'weather', label: 'Weather Forecast', Icon: CloudSun, desc: 'NWS 7-day forecast and alerts' },
+      { content: 'water', label: 'Stream Gauges', Icon: Droplets, desc: '9 USGS water level monitors' },
+      { content: 'traffic', label: 'Traffic Incidents', Icon: TrafficCone, desc: 'Live Maryland CHART data' },
+      { content: 'reports', label: '311 Service Requests', Icon: Megaphone, desc: 'SeeClickFix open issues' },
+      { content: 'parking', label: 'Parking', Icon: SquareParking, desc: 'ParkMobile zones and garages' },
+      { content: 'civic', label: 'Civic Info', Icon: Landmark, desc: 'Meetings and representatives' },
+      { content: 'dashboard', label: 'County Dashboard', Icon: BarChart3, desc: 'Frederick County at a glance' },
     ];
     for (const p of panels) {
       cmds.push({
         id: `panel-${p.content}`,
         label: p.label,
         description: p.desc,
-        icon: p.icon,
+        icon: <Glyph Icon={p.Icon} />,
         category: 'Data Panels',
         action: () => dispatch({ type: 'OPEN_PANEL', content: p.content }),
       });
     }
 
-    // Map layers
+    // Map layers — retain the colorful layer emoji from the catalog for now;
+    // a future pass maps them to icons individually.
     for (const layer of mapLayers) {
       const cat = layerCategories.find((c) => c.id === layer.category);
       cmds.push({
         id: `layer-${layer.id}`,
         label: layer.name,
         description: `${cat?.name || 'Layer'} · Toggle on map`,
-        icon: layer.icon,
+        icon: <EmojiGlyph char={layer.icon} />,
         category: 'Map Layers',
         action: () => dispatch({ type: 'TOGGLE_LAYER', layerId: layer.id }),
       });
@@ -76,7 +116,7 @@ export function CommandPalette() {
       id: 'action-3d',
       label: 'Switch to 3D View',
       description: 'Tilt the map to 3D perspective',
-      icon: '🗻',
+      icon: <Glyph Icon={Mountain} />,
       category: 'Actions',
       action: () => {
         mapFlyTo(-77.41, 39.41, 10);
@@ -86,12 +126,20 @@ export function CommandPalette() {
       id: 'action-reset',
       label: 'Reset Map View',
       description: 'Return to county overview',
-      icon: '🔄',
+      icon: <Glyph Icon={RotateCcw} />,
       category: 'Actions',
       action: () => {
         resetView();
         dispatch({ type: 'CLOSE_PANEL' });
       },
+    });
+    cmds.push({
+      id: 'action-layers',
+      label: 'Toggle Layer Panel',
+      description: 'Show or hide the layer controls',
+      icon: <Glyph Icon={Layers} />,
+      category: 'Actions',
+      action: () => dispatch({ type: 'TOGGLE_LAYER_PANEL' }),
     });
 
     return cmds;
@@ -172,9 +220,7 @@ export function CommandPalette() {
       <div className="relative w-full max-w-xl rounded-2xl border border-border bg-bg-elevated shadow-2xl overflow-hidden animate-slide-in">
         {/* Search Input */}
         <div className="flex items-center gap-3 border-b border-border px-4 py-3">
-          <svg className="h-5 w-5 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
+          <Search className="h-5 w-5 text-accent flex-shrink-0" strokeWidth={2} />
           <input
             ref={inputRef}
             type="text"
@@ -210,7 +256,7 @@ export function CommandPalette() {
                         isSelected ? 'bg-accent/10 text-text' : 'text-text-secondary hover:bg-bg-hover'
                       }`}
                     >
-                      <span className="text-lg flex-shrink-0">{cmd.icon}</span>
+                      {cmd.icon}
                       <div className="min-w-0 flex-1">
                         <div className={`text-sm font-medium truncate ${isSelected ? 'text-text' : ''}`}>
                           {cmd.label}
@@ -218,8 +264,8 @@ export function CommandPalette() {
                         <div className="text-xs text-text-muted truncate">{cmd.description}</div>
                       </div>
                       {isSelected && (
-                        <kbd className="flex-shrink-0 rounded bg-bg-surface border border-border px-1.5 py-0.5 text-[10px] text-text-muted">
-                          ↵
+                        <kbd className="flex-shrink-0 rounded bg-bg-surface border border-border px-1.5 py-0.5 text-[10px] text-text-muted inline-flex items-center">
+                          <CornerDownLeft className="h-3 w-3" strokeWidth={2} />
                         </kbd>
                       )}
                     </button>

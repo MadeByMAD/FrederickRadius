@@ -1,13 +1,29 @@
-import { useState } from 'react';
+import { useState, type ComponentType } from 'react';
 import { motion } from 'framer-motion';
+import {
+  AlertTriangle,
+  Beer,
+  CloudSun,
+  Coffee,
+  Compass,
+  Droplets,
+  Landmark,
+  MapPin,
+  Megaphone,
+  ShieldAlert,
+  TrafficCone,
+  Trees,
+} from 'lucide-react';
 import { useWeather } from '../../hooks/useWeather';
 import { getWeatherEmoji } from '../../services/api/weather';
 import { useAppState } from '../../hooks/useAppState';
 import { staggerContainer, staggerItem } from '../../lib/motion';
 import { municipalities } from '../../data/municipalities';
 
+type LucideIcon = ComponentType<{ className?: string; strokeWidth?: number }>;
+
 interface Suggestion {
-  icon: string;
+  Icon: LucideIcon;
   title: string;
   subtitle: string;
   action: () => void;
@@ -43,35 +59,35 @@ export function WhatsHappeningNow() {
   // Time-aware suggestions
   if (timeOfDay === 'morning') {
     suggestions.push(
-      { icon: '☕', title: 'Morning coffee spots', subtitle: 'Cafes & bakeries nearby', action: () => dispatch({ type: 'TOGGLE_LAYER', layerId: 'farmers-markets' }), color: '#F59E0B' },
-      { icon: '🌤️', title: 'Today\'s forecast', subtitle: current ? `${current.temperature}° ${current.shortForecast}` : 'Loading...', action: () => dispatch({ type: 'OPEN_PANEL', content: 'weather' }), color: '#3B82F6' },
+      { Icon: Coffee, title: 'Morning coffee spots', subtitle: 'Cafes & bakeries nearby', action: () => dispatch({ type: 'TOGGLE_LAYER', layerId: 'farmers-markets' }), color: 'var(--color-warning)' },
+      { Icon: CloudSun, title: "Today's forecast", subtitle: current ? `${current.temperature}° ${current.shortForecast}` : 'Loading...', action: () => dispatch({ type: 'OPEN_PANEL', content: 'weather' }), color: 'var(--color-info)' },
     );
   } else if (timeOfDay === 'afternoon') {
     suggestions.push(
-      { icon: '🌳', title: 'Explore nearby parks', subtitle: '618+ miles of trails', action: () => dispatch({ type: 'TOGGLE_LAYER', layerId: 'parks' }), color: '#10B981' },
-      { icon: '🚗', title: 'Traffic conditions', subtitle: 'Live CHART incidents', action: () => dispatch({ type: 'OPEN_PANEL', content: 'traffic' }), color: '#F97316' },
+      { Icon: Trees, title: 'Explore nearby parks', subtitle: '618+ miles of trails', action: () => dispatch({ type: 'TOGGLE_LAYER', layerId: 'parks' }), color: 'var(--color-success)' },
+      { Icon: TrafficCone, title: 'Traffic conditions', subtitle: 'Live CHART incidents', action: () => dispatch({ type: 'OPEN_PANEL', content: 'traffic' }), color: 'var(--color-warning)' },
     );
   } else if (timeOfDay === 'evening') {
     suggestions.push(
-      { icon: '🍺', title: 'Dinner & drinks', subtitle: 'Restaurants with liquor licenses', action: () => dispatch({ type: 'TOGGLE_LAYER', layerId: 'liquor' }), color: '#FBBF24' },
-      { icon: '🏛️', title: 'Civic meetings tonight', subtitle: 'Council, planning, appeals', action: () => dispatch({ type: 'OPEN_PANEL', content: 'civic' }), color: '#8B5CF6' },
+      { Icon: Beer, title: 'Dinner & drinks', subtitle: 'Restaurants with liquor licenses', action: () => dispatch({ type: 'TOGGLE_LAYER', layerId: 'liquor' }), color: 'var(--color-gold)' },
+      { Icon: Landmark, title: 'Civic meetings tonight', subtitle: 'Council, planning, appeals', action: () => dispatch({ type: 'OPEN_PANEL', content: 'civic' }), color: 'var(--color-accent)' },
     );
   } else {
     suggestions.push(
-      { icon: '💧', title: 'Stream levels', subtitle: '9 USGS gauges active', action: () => dispatch({ type: 'OPEN_PANEL', content: 'water' }), color: '#06B6D4' },
-      { icon: '🛡️', title: 'Safety resources', subtitle: 'Fire, police, shelters', action: () => dispatch({ type: 'TOGGLE_LAYER', layerId: 'fire-stations' }), color: '#EF4444' },
+      { Icon: Droplets, title: 'Stream levels', subtitle: '9 USGS gauges active', action: () => dispatch({ type: 'OPEN_PANEL', content: 'water' }), color: 'var(--color-info)' },
+      { Icon: ShieldAlert, title: 'Safety resources', subtitle: 'Fire, police, shelters', action: () => dispatch({ type: 'TOGGLE_LAYER', layerId: 'fire-stations' }), color: 'var(--color-danger)' },
     );
   }
 
   // Always-relevant suggestions
   suggestions.push(
-    { icon: '📢', title: '311 service requests', subtitle: 'What\'s being reported', action: () => dispatch({ type: 'OPEN_PANEL', content: 'reports' }), color: '#EF4444' },
+    { Icon: Megaphone, title: '311 service requests', subtitle: "What's being reported", action: () => dispatch({ type: 'OPEN_PANEL', content: 'reports' }), color: 'var(--color-danger)' },
     {
-      icon: '📍',
+      Icon: MapPin,
       title: `Explore ${randomMuni.name.replace(/^(City of |Town of |Village of )/, '')}`,
       subtitle: `Pop. ${randomMuni.population.toLocaleString()}`,
       action: () => dispatch({ type: 'SELECT_MUNICIPALITY', id: randomMuni.id }),
-      color: '#3B82F6',
+      color: 'var(--color-accent)',
     },
   );
 
@@ -79,8 +95,8 @@ export function WhatsHappeningNow() {
     <div className="space-y-4">
       {/* Greeting */}
       <div>
-        <h2 className="text-lg font-bold text-text">{GREETINGS[timeOfDay]}</h2>
-        <p className="text-xs text-text-muted">
+        <h2 className="font-display text-2xl font-semibold tracking-tight text-text">{GREETINGS[timeOfDay]}</h2>
+        <p className="mt-0.5 text-xs text-text-muted">
           {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
           {current && ` · ${getWeatherEmoji(current.shortForecast)} ${current.temperature}°${current.temperatureUnit}`}
         </p>
@@ -93,8 +109,9 @@ export function WhatsHappeningNow() {
           animate={{ opacity: 1, x: 0 }}
           className="rounded-xl border border-warning/30 bg-warning/10 p-3"
         >
-          <div className="flex items-center gap-2 text-sm font-medium text-warning">
-            <span>⚠️</span> {alerts[0].event}
+          <div className="inline-flex items-center gap-2 text-sm font-medium text-warning">
+            <AlertTriangle className="h-4 w-4" strokeWidth={2} />
+            {alerts[0].event}
           </div>
           <p className="mt-1 text-xs text-text-secondary line-clamp-2">{alerts[0].headline}</p>
         </motion.div>
@@ -113,23 +130,30 @@ export function WhatsHappeningNow() {
             variants={staggerItem}
             whileTap={{ scale: 0.97 }}
             onClick={s.action}
-            className="rounded-xl bg-bg-surface border border-border p-3 text-left hover:bg-bg-hover transition-colors active:bg-bg-hover"
+            className="rounded-xl border border-border bg-bg-elevated p-3 text-left shadow-[var(--shadow-surface-1)] hover:bg-bg-hover transition-colors"
           >
-            <div className="text-xl mb-1.5">{s.icon}</div>
+            <span
+              className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg"
+              style={{ backgroundColor: 'var(--color-accent-subtle)', color: s.color }}
+            >
+              <s.Icon className="h-4 w-4" strokeWidth={1.75} />
+            </span>
             <div className="text-sm font-medium text-text">{s.title}</div>
-            <div className="text-[10px] text-text-muted mt-0.5">{s.subtitle}</div>
+            <div className="mt-0.5 text-[11px] text-text-muted">{s.subtitle}</div>
           </motion.button>
         ))}
       </motion.div>
 
       {/* Quick explore */}
-      <div className="rounded-xl bg-gradient-to-r from-accent/10 to-success/10 border border-accent/20 p-4">
-        <div className="flex items-center justify-between">
+      <div className="rounded-xl border border-border bg-bg-elevated p-4 shadow-[var(--shadow-surface-1)]">
+        <div className="flex items-center justify-between gap-3">
           <div>
             <div className="text-sm font-semibold text-text">12 municipalities to explore</div>
-            <div className="text-xs text-text-muted mt-0.5">Right-click the map for instant location intelligence</div>
+            <div className="mt-0.5 text-xs text-text-muted">Right-click the map to look up any address.</div>
           </div>
-          <span className="text-2xl">🧭</span>
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent-subtle text-accent">
+            <Compass className="h-5 w-5" strokeWidth={1.75} />
+          </span>
         </div>
       </div>
     </div>

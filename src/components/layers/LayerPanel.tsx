@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronRight, Layers as LayersIcon, X } from 'lucide-react';
 import { useAppState } from '../../hooks/useAppState';
 import { layerCategories, mapLayers } from '../../data/layers';
 import { LayerItem } from './LayerItem';
@@ -42,21 +43,20 @@ export function LayerPanel() {
       {/* Header */}
       <div className="flex-shrink-0 border-b border-border px-4 py-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-sm">◆</span>
-            <h2 className="text-sm font-semibold text-text">Data Layers</h2>
+          <div className="flex items-center gap-2 text-text">
+            <LayersIcon className="h-4 w-4 text-accent" strokeWidth={1.75} />
+            <h2 className="text-sm font-semibold">Data Layers</h2>
           </div>
           <div className="flex items-center gap-2">
-            <span className="rounded-full bg-accent/10 text-accent text-[10px] font-bold px-2 py-0.5 tabular-nums">
+            <span className="rounded-full bg-accent-subtle text-accent text-[10px] font-medium px-2 py-0.5 tabular-nums">
               {activeCount}/{totalCount}
             </span>
             <button
               onClick={() => dispatch({ type: 'TOGGLE_LAYER_PANEL' })}
               className="rounded p-1 text-text-muted hover:text-text hover:bg-bg-hover transition-colors"
+              aria-label="Close layer panel"
             >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <X className="h-4 w-4" strokeWidth={2} />
             </button>
           </div>
         </div>
@@ -112,18 +112,15 @@ export function LayerPanel() {
                   onClick={() => toggleCategory(group.id)}
                   className="flex w-full items-center gap-1.5 rounded px-2 py-1.5 text-xs text-text-muted hover:text-text hover:bg-bg-hover transition-colors"
                 >
-                  <motion.svg
+                  <motion.span
                     animate={{ rotate: isExpanded ? 90 : 0 }}
-                    className="h-3 w-3 flex-shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+                    className="flex h-3 w-3 flex-shrink-0 items-center justify-center"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </motion.svg>
+                    <ChevronRight className="h-3 w-3" strokeWidth={2} />
+                  </motion.span>
                   <span>{group.icon}</span>
                   <span className="flex-1 text-left">{group.name}</span>
-                  <span className="text-[9px] text-text-muted tabular-nums">{group.layers.length}</span>
+                  <span className="text-[10px] text-text-muted tabular-nums">{group.layers.length}</span>
                 </button>
 
                 <AnimatePresence>

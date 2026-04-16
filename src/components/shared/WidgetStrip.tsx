@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, type ComponentType, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
+import { AlertTriangle, Droplets, Landmark, Sunrise, UtensilsCrossed } from 'lucide-react';
 import { useWeather } from '../../hooks/useWeather';
 import { useWaterLevels } from '../../hooks/useWaterLevels';
 import { getWeatherEmoji } from '../../services/api/weather';
@@ -7,14 +8,20 @@ import { getWaterLevelStatus } from '../../services/api/water';
 import { useAppState } from '../../hooks/useAppState';
 import { upcomingMeetings } from '../../data/civic';
 
+type LucideIcon = ComponentType<{ className?: string; strokeWidth?: number }>;
+
 interface Widget {
   id: string;
-  icon: string;
+  icon: ReactNode;
   label: string;
   value: string;
   detail: string;
   color: string;
   onClick: () => void;
+}
+
+function iconNode(Icon: LucideIcon) {
+  return <Icon className="h-3.5 w-3.5" strokeWidth={1.75} />;
 }
 
 export function WidgetStrip() {
@@ -27,15 +34,15 @@ export function WidgetStrip() {
     const w: Widget[] = [];
     const current = forecast[0];
 
-    // Weather
+    // Weather — NWS-derived glyph still reads as useful info at a glance.
     if (current) {
       w.push({
         id: 'weather',
-        icon: getWeatherEmoji(current.shortForecast),
+        icon: <span className="text-sm leading-none">{getWeatherEmoji(current.shortForecast)}</span>,
         label: 'Now',
         value: `${current.temperature}°${current.temperatureUnit}`,
         detail: current.shortForecast,
-        color: '#3B82F6',
+        color: 'var(--color-info)',
         onClick: () => dispatch({ type: 'OPEN_PANEL', content: 'weather' }),
       });
     }
@@ -44,11 +51,11 @@ export function WidgetStrip() {
     if (alerts.length > 0) {
       w.push({
         id: 'alert',
-        icon: '⚠️',
+        icon: iconNode(AlertTriangle),
         label: 'Alert',
         value: alerts[0].event,
         detail: 'Active weather alert',
-        color: '#F59E0B',
+        color: 'var(--color-warning)',
         onClick: () => dispatch({ type: 'OPEN_PANEL', content: 'weather' }),
       });
     }
@@ -63,11 +70,11 @@ export function WidgetStrip() {
       const daysUntil = Math.ceil((meetDate.getTime() - now.getTime()) / 86400000);
       w.push({
         id: 'meeting',
-        icon: '🏛️',
+        icon: iconNode(Landmark),
         label: daysUntil === 0 ? 'Today' : daysUntil === 1 ? 'Tomorrow' : `${daysUntil}d`,
         value: nextMeeting.title.replace('County Council ', '').replace(' Session', ''),
         detail: `${nextMeeting.time} · ${meetDate.toLocaleDateString('en-US', { weekday: 'short' })}`,
-        color: '#8B5CF6',
+        color: 'var(--color-accent)',
         onClick: () => dispatch({ type: 'OPEN_PANEL', content: 'civic' }),
       });
     }
@@ -85,7 +92,7 @@ export function WidgetStrip() {
         const status = getWaterLevelStatus(withHeight.height);
         w.push({
           id: 'water',
-          icon: '💧',
+          icon: iconNode(Droplets),
           label: status.label,
           value: `${withHeight.height.toFixed(1)} ft`,
           detail: withHeight.name.split(' at ')[0] || 'Stream gauge',
@@ -98,9 +105,25 @@ export function WidgetStrip() {
     // Time of day suggestion
     const hour = now.getHours();
     if (hour >= 6 && hour < 10) {
-      w.push({ id: 'suggest', icon: '☀️', label: 'Morning', value: 'Farmers Markets', detail: 'Open today nearby', color: '#F59E0B', onClick: () => dispatch({ type: 'TOGGLE_LAYER', layerId: 'farmers-markets' }) });
+      w.push({
+        id: 'suggest',
+        icon: iconNode(Sunrise),
+        label: 'Morning',
+        value: 'Farmers Markets',
+        detail: 'Open today nearby',
+        color: 'var(--color-warning)',
+        onClick: () => dispatch({ type: 'TOGGLE_LAYER', layerId: 'farmers-markets' }),
+      });
     } else if (hour >= 17 && hour < 21) {
-      w.push({ id: 'suggest', icon: '🍽️', label: 'Evening', value: 'Dining spots', detail: '250+ licensed venues', color: '#EC4899', onClick: () => dispatch({ type: 'TOGGLE_LAYER', layerId: 'liquor' }) });
+      w.push({
+        id: 'suggest',
+        icon: iconNode(UtensilsCrossed),
+        label: 'Evening',
+        value: 'Dining spots',
+        detail: '250+ licensed venues',
+        color: 'var(--color-gold)',
+        onClick: () => dispatch({ type: 'TOGGLE_LAYER', layerId: 'liquor' }),
+      });
     }
 
     return w;
@@ -121,9 +144,9 @@ export function WidgetStrip() {
             onClick={widget.onClick}
             className="flex-shrink-0 rounded-xl glass border border-border/50 p-2.5 text-left min-w-[130px] hover:bg-bg-hover/50 transition-colors"
           >
-            <div className="flex items-center gap-1.5 mb-1">
-              <span className="text-sm">{widget.icon}</span>
-              <span className="text-[9px] font-medium uppercase tracking-wider" style={{ color: widget.color }}>
+            <div className="flex items-center gap-1.5 mb-1" style={{ color: widget.color }}>
+              {widget.icon}
+              <span className="text-[10px] font-medium uppercase tracking-wider">
                 {widget.label}
               </span>
             </div>

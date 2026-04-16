@@ -1,28 +1,54 @@
+import type { ComponentType } from 'react';
 import { motion } from 'framer-motion';
+import {
+  ArrowDown,
+  ArrowRight,
+  ArrowUp,
+  Building2,
+  CircleDollarSign,
+  Database,
+  Luggage,
+  Store,
+  Users,
+} from 'lucide-react';
 import { staggerContainer, staggerItem } from '../../lib/motion';
 import { municipalities } from '../../data/municipalities';
 
-const COUNTY_STATS = [
-  { label: 'Population', value: 305000, display: '305K+', color: '#3B82F6', icon: '👥' },
-  { label: 'Businesses', value: 4500, display: '4,500+', color: '#10B981', icon: '🏪' },
-  { label: 'Annual Visitors', value: 1900000, display: '1.9M', color: '#F59E0B', icon: '🧳' },
-  { label: 'Economic Impact', value: 560, display: '$560M', color: '#8B5CF6', icon: '💰' },
-  { label: 'Municipalities', value: 12, display: '12', color: '#EC4899', icon: '🏘️' },
-  { label: 'Data Sources', value: 500, display: '500+', color: '#06B6D4', icon: '📊' },
+type LucideIcon = ComponentType<{ className?: string; strokeWidth?: number }>;
+
+interface Stat {
+  label: string;
+  display: string;
+  Icon: LucideIcon;
+}
+
+const COUNTY_STATS: Stat[] = [
+  { label: 'Population', display: '305K+', Icon: Users },
+  { label: 'Businesses', display: '4,500+', Icon: Store },
+  { label: 'Annual Visitors', display: '1.9M', Icon: Luggage },
+  { label: 'Economic Impact', display: '$560M', Icon: CircleDollarSign },
+  { label: 'Municipalities', display: '12', Icon: Building2 },
+  { label: 'Data Sources', display: '500+', Icon: Database },
 ];
 
 const ECONOMIC_HIGHLIGHTS = [
-  { label: 'Median Household Income', value: '$120,458', context: '33% above national median', trend: 'up' },
-  { label: 'Median Home Value', value: '$437,700', context: 'Strong real estate market', trend: 'up' },
-  { label: 'Unemployment Rate', value: '2.5%', context: 'Well below national average', trend: 'down' },
-  { label: 'Labor Force', value: '153,799', context: 'Highly educated workforce', trend: 'stable' },
+  { label: 'Median Household Income', value: '$120,458', context: '33% above national median', trend: 'up' as const },
+  { label: 'Median Home Value', value: '$437,700', context: 'Strong real estate market', trend: 'up' as const },
+  { label: 'Unemployment Rate', value: '2.5%', context: 'Well below national average', trend: 'down' as const },
+  { label: 'Labor Force', value: '153,799', context: 'Highly educated workforce', trend: 'stable' as const },
 ];
+
+function TrendIcon({ trend }: { trend: 'up' | 'down' | 'stable' }) {
+  if (trend === 'up') return <ArrowUp className="h-3.5 w-3.5 text-success" strokeWidth={2} />;
+  if (trend === 'down') return <ArrowDown className="h-3.5 w-3.5 text-success" strokeWidth={2} />;
+  return <ArrowRight className="h-3.5 w-3.5 text-text-muted" strokeWidth={2} />;
+}
 
 export function CountyDashboard() {
   const totalPop = municipalities.reduce((sum, m) => sum + m.population, 0);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {/* Hero stats grid */}
       <motion.div
         variants={staggerContainer}
@@ -34,39 +60,37 @@ export function CountyDashboard() {
           <motion.div
             key={stat.label}
             variants={staggerItem}
-            className="rounded-xl bg-bg-elevated border border-border p-3 text-center"
+            className="rounded-xl border border-border bg-bg-elevated p-3 text-center shadow-[var(--shadow-surface-1)]"
           >
-            <div className="text-xl mb-1">{stat.icon}</div>
-            <div className="text-lg font-bold tabular-nums" style={{ color: stat.color }}>
+            <span className="mx-auto mb-2 flex h-7 w-7 items-center justify-center rounded-md bg-accent-subtle text-accent">
+              <stat.Icon className="h-3.5 w-3.5" strokeWidth={1.75} />
+            </span>
+            <div className="font-display text-lg font-semibold tabular-nums text-text">
               {stat.display}
             </div>
-            <div className="text-[9px] text-text-muted uppercase tracking-wider mt-0.5">{stat.label}</div>
+            <div className="mt-0.5 text-[10px] uppercase tracking-wider text-text-muted">
+              {stat.label}
+            </div>
           </motion.div>
         ))}
       </motion.div>
 
       {/* Economic highlights */}
       <div>
-        <h4 className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-2">
+        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-secondary">
           Economic Indicators
         </h4>
         <div className="space-y-1.5">
           {ECONOMIC_HIGHLIGHTS.map((item) => (
-            <div key={item.label} className="rounded-lg bg-bg-surface border border-border p-3">
-              <div className="flex items-center justify-between">
-                <div>
+            <div key={item.label} className="rounded-lg border border-border bg-bg-surface p-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
                   <div className="text-xs text-text-muted">{item.label}</div>
-                  <div className="text-base font-bold text-text mt-0.5">{item.value}</div>
+                  <div className="mt-0.5 font-display text-base font-semibold text-text">{item.value}</div>
                 </div>
-                <div className="text-right">
-                  <span className={`text-xs ${
-                    item.trend === 'up' ? 'text-success' : item.trend === 'down' ? 'text-success' : 'text-text-muted'
-                  }`}>
-                    {item.trend === 'up' ? '↑' : item.trend === 'down' ? '↓' : '→'}
-                  </span>
-                </div>
+                <TrendIcon trend={item.trend} />
               </div>
-              <div className="text-[10px] text-text-muted mt-1">{item.context}</div>
+              <div className="mt-1 text-[11px] text-text-muted">{item.context}</div>
             </div>
           ))}
         </div>
@@ -74,29 +98,30 @@ export function CountyDashboard() {
 
       {/* Municipality breakdown */}
       <div>
-        <h4 className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-2">
+        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-secondary">
           Municipality Population Share
         </h4>
         <div className="space-y-1.5">
           {municipalities
+            .slice()
             .sort((a, b) => b.population - a.population)
             .slice(0, 6)
             .map((m) => {
               const pct = (m.population / totalPop) * 100;
               return (
                 <div key={m.id} className="flex items-center gap-3">
-                  <div className="w-24 text-xs text-text truncate">
+                  <div className="w-24 truncate text-xs text-text">
                     {m.name.replace(/^(City of |Town of |Village of )/, '')}
                   </div>
-                  <div className="flex-1 h-2 bg-bg-hover rounded-full overflow-hidden">
+                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-bg-hover">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${pct}%` }}
                       transition={{ duration: 0.8, ease: 'easeOut' }}
-                      className="h-full bg-accent rounded-full"
+                      className="h-full rounded-full bg-accent"
                     />
                   </div>
-                  <div className="w-16 text-right text-xs text-text-muted tabular-nums">
+                  <div className="w-16 text-right text-xs tabular-nums text-text-muted">
                     {m.population.toLocaleString()}
                   </div>
                 </div>
@@ -106,24 +131,24 @@ export function CountyDashboard() {
       </div>
 
       {/* Data sources summary */}
-      <div className="rounded-xl bg-gradient-to-br from-accent/5 to-success/5 border border-accent/10 p-4">
-        <div className="text-sm font-semibold text-text mb-2">Powered by Real Data</div>
-        <div className="grid grid-cols-2 gap-y-1.5 text-xs text-text-secondary">
-          <span>Frederick County GIS</span>
-          <span>198 services</span>
-          <span>City of Frederick GIS</span>
-          <span>67 services</span>
-          <span>Maryland iMAP</span>
-          <span>120+ layers</span>
-          <span>Federal APIs</span>
-          <span>Census, FEMA, NPS, BLS</span>
-          <span>Real-time feeds</span>
-          <span>NWS, USGS, CHART, 311</span>
-        </div>
+      <div className="rounded-xl border border-border bg-bg-elevated p-4 shadow-[var(--shadow-surface-1)]">
+        <div className="mb-2 text-sm font-semibold text-text">Powered by public data</div>
+        <dl className="grid grid-cols-2 gap-y-1.5 text-xs text-text-secondary">
+          <dt>Frederick County GIS</dt>
+          <dd className="text-right text-text-muted">198 services</dd>
+          <dt>City of Frederick GIS</dt>
+          <dd className="text-right text-text-muted">67 services</dd>
+          <dt>Maryland iMAP</dt>
+          <dd className="text-right text-text-muted">120+ layers</dd>
+          <dt>Federal APIs</dt>
+          <dd className="text-right text-text-muted">Census, FEMA, NPS, BLS</dd>
+          <dt>Real-time feeds</dt>
+          <dd className="text-right text-text-muted">NWS, USGS, CHART, 311</dd>
+        </dl>
       </div>
 
-      <div className="text-xs text-text-muted text-center">
-        Sources: Census ACS 2023, BLS, Frederick County Economic Development
+      <div className="text-center text-xs text-text-muted">
+        Sources: Census ACS 2023, BLS, Frederick County Economic Development.
       </div>
     </div>
   );

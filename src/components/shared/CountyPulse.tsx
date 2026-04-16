@@ -1,8 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type ComponentType } from 'react';
+import {
+  AlertTriangle,
+  ChevronDown,
+  CloudSun,
+  Droplets,
+  Megaphone,
+  TrafficCone,
+} from 'lucide-react';
 import { useWeather } from '../../hooks/useWeather';
 import { useWaterLevels } from '../../hooks/useWaterLevels';
 import { getWeatherEmoji } from '../../services/api/weather';
 import { useAppState } from '../../hooks/useAppState';
+
+type LucideIcon = ComponentType<{ className?: string; strokeWidth?: number }>;
 
 export function CountyPulse() {
   const [expanded, setExpanded] = useState(false);
@@ -51,16 +61,17 @@ export function CountyPulse() {
         {alerts.length > 0 && (
           <>
             <span className="text-xs text-border">|</span>
-            <span className="text-xs text-warning">⚠️ {alerts.length} alert{alerts.length > 1 ? 's' : ''}</span>
+            <span className="inline-flex items-center gap-1 text-xs text-warning">
+              <AlertTriangle className="h-3 w-3" strokeWidth={2} />
+              {alerts.length} alert{alerts.length > 1 ? 's' : ''}
+            </span>
           </>
         )}
 
-        <svg
+        <ChevronDown
           className={`h-3 w-3 text-text-muted transition-transform ${expanded ? 'rotate-180' : ''}`}
-          fill="none" stroke="currentColor" viewBox="0 0 24 24"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
+          strokeWidth={2}
+        />
       </button>
 
       {expanded && (
@@ -71,28 +82,28 @@ export function CountyPulse() {
 
           <div className="grid grid-cols-2 gap-2">
             <PulseCard
-              icon="🌤️"
+              Icon={CloudSun}
               label="Weather"
               value={current ? `${current.temperature}°${current.temperatureUnit}` : '...'}
               detail={current?.shortForecast || 'Loading...'}
               onClick={() => { dispatch({ type: 'OPEN_PANEL', content: 'weather' }); setExpanded(false); }}
             />
             <PulseCard
-              icon="💧"
+              Icon={Droplets}
               label="Avg Stream Level"
               value={avgGaugeHeight > 0 ? `${avgGaugeHeight.toFixed(1)} ft` : '...'}
               detail={`${gauges.length} active gauges`}
               onClick={() => { dispatch({ type: 'OPEN_PANEL', content: 'water' }); setExpanded(false); }}
             />
             <PulseCard
-              icon="🚗"
+              Icon={TrafficCone}
               label="Traffic"
               value="Live"
               detail="CHART incidents"
               onClick={() => { dispatch({ type: 'OPEN_PANEL', content: 'traffic' }); setExpanded(false); }}
             />
             <PulseCard
-              icon="📢"
+              Icon={Megaphone}
               label="311 Reports"
               value="Active"
               detail="SeeClickFix issues"
@@ -104,7 +115,10 @@ export function CountyPulse() {
             <div className="mt-3 space-y-1">
               {alerts.slice(0, 2).map((a, i) => (
                 <div key={i} className="rounded-lg bg-warning/10 border border-warning/20 px-3 py-2">
-                  <div className="text-xs font-medium text-warning">⚠️ {a.event}</div>
+                  <div className="inline-flex items-center gap-1.5 text-xs font-medium text-warning">
+                    <AlertTriangle className="h-3 w-3" strokeWidth={2} />
+                    {a.event}
+                  </div>
                   <div className="text-[10px] text-text-muted mt-0.5 line-clamp-1">{a.headline}</div>
                 </div>
               ))}
@@ -121,19 +135,19 @@ export function CountyPulse() {
   );
 }
 
-function PulseCard({ icon, label, value, detail, onClick }: {
-  icon: string; label: string; value: string; detail: string; onClick: () => void;
+function PulseCard({ Icon, label, value, detail, onClick }: {
+  Icon: LucideIcon; label: string; value: string; detail: string; onClick: () => void;
 }) {
   return (
     <button
       onClick={onClick}
       className="rounded-xl bg-bg-surface border border-border p-2.5 text-left hover:bg-bg-hover transition-colors"
     >
-      <div className="flex items-center gap-1.5">
-        <span className="text-sm">{icon}</span>
-        <span className="text-[10px] text-text-muted">{label}</span>
+      <div className="flex items-center gap-1.5 text-text-muted">
+        <Icon className="h-3.5 w-3.5" strokeWidth={1.75} />
+        <span className="text-[10px] uppercase tracking-wider">{label}</span>
       </div>
-      <div className="mt-1 text-base font-bold text-text">{value}</div>
+      <div className="mt-1 text-base font-semibold text-text">{value}</div>
       <div className="text-[10px] text-text-muted">{detail}</div>
     </button>
   );

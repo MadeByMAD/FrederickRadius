@@ -1,9 +1,25 @@
+import type { ComponentType } from 'react';
+import {
+  BarChart3,
+  CloudSun,
+  Compass,
+  Droplets,
+  GitCompareArrows,
+  Landmark,
+  Layers,
+  Megaphone,
+  SquareParking,
+  TrafficCone,
+  X,
+} from 'lucide-react';
 import { useAppState } from '../../hooks/useAppState';
 import { municipalities } from '../../data/municipalities';
 import { MunicipalityCard } from '../municipalities/MunicipalityCard';
 import { MapControls } from '../map/MapControls';
 import { SearchBar } from './SearchBar';
 import { ThemeToggle } from '../shared/ThemeToggle';
+
+type LucideIcon = ComponentType<{ className?: string; strokeWidth?: number }>;
 
 interface Props {
   onOpenPanel: (content: 'weather' | 'water' | 'civic' | 'traffic' | 'reports' | 'parking' | 'compare' | 'dashboard') => void;
@@ -17,15 +33,14 @@ export function Sidebar({ onOpenPanel, onStartTour }: Props) {
     <div className="flex h-full w-80 flex-shrink-0 flex-col border-r border-border bg-bg lg:w-[340px]">
       {/* Header */}
       <div className="flex-shrink-0 border-b border-border p-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <button
               onClick={() => dispatch({ type: 'TOGGLE_SIDEBAR' })}
               className="rounded p-1 text-text-muted hover:bg-bg-hover hover:text-text transition-colors lg:hidden"
+              aria-label="Close sidebar"
             >
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <X className="h-5 w-5" strokeWidth={2} />
             </button>
             <div>
               <h1 className="font-display text-xl font-semibold text-text leading-none">Frederick Radius</h1>
@@ -42,20 +57,22 @@ export function Sidebar({ onOpenPanel, onStartTour }: Props) {
       {/* Quick Actions */}
       <div className="flex-shrink-0 border-b border-border p-3">
         <div className="grid grid-cols-3 gap-1.5">
-          <QuickAction icon="🌤️" label="Weather" onClick={() => onOpenPanel('weather')} />
-          <QuickAction icon="💧" label="Water" onClick={() => onOpenPanel('water')} />
-          <QuickAction icon="🚗" label="Traffic" onClick={() => onOpenPanel('traffic')} />
-          <QuickAction icon="🏛️" label="Civic" onClick={() => onOpenPanel('civic')} />
-          <QuickAction icon="📢" label="311" onClick={() => onOpenPanel('reports')} />
-          <QuickAction icon="🅿️" label="Parking" onClick={() => onOpenPanel('parking')} />
-          <QuickAction icon="⚔️" label="Compare" onClick={() => onOpenPanel('compare')} />
-          <QuickAction icon="📊" label="Dashboard" onClick={() => onOpenPanel('dashboard')} />
-        </div>
-        <div className="mt-1.5 grid grid-cols-1">
-          <QuickAction icon="📑" label="Map Layers" onClick={() => {
-            const el = document.getElementById('layer-controls');
-            el?.scrollIntoView({ behavior: 'smooth' });
-          }} />
+          <QuickAction Icon={CloudSun} label="Weather" onClick={() => onOpenPanel('weather')} />
+          <QuickAction Icon={Droplets} label="Water" onClick={() => onOpenPanel('water')} />
+          <QuickAction Icon={TrafficCone} label="Traffic" onClick={() => onOpenPanel('traffic')} />
+          <QuickAction Icon={Landmark} label="Civic" onClick={() => onOpenPanel('civic')} />
+          <QuickAction Icon={Megaphone} label="311" onClick={() => onOpenPanel('reports')} />
+          <QuickAction Icon={SquareParking} label="Parking" onClick={() => onOpenPanel('parking')} />
+          <QuickAction Icon={GitCompareArrows} label="Compare" onClick={() => onOpenPanel('compare')} />
+          <QuickAction Icon={BarChart3} label="Dashboard" onClick={() => onOpenPanel('dashboard')} />
+          <QuickAction
+            Icon={Layers}
+            label="Layers"
+            onClick={() => {
+              const el = document.getElementById('layer-controls');
+              el?.scrollIntoView({ behavior: 'smooth' });
+            }}
+          />
         </div>
       </div>
 
@@ -85,13 +102,14 @@ export function Sidebar({ onOpenPanel, onStartTour }: Props) {
       </div>
 
       {/* Footer */}
-      <div className="flex-shrink-0 border-t border-border px-4 py-2">
+      <div className="flex-shrink-0 border-t border-border px-4 py-3">
         {onStartTour && (
           <button
             onClick={onStartTour}
-            className="w-full mb-2 flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-accent/10 to-success/10 border border-accent/20 px-3 py-2 text-xs font-medium text-accent hover:from-accent/20 hover:to-success/20 transition-all"
+            className="w-full mb-2 flex items-center justify-center gap-2 rounded-lg border border-border bg-bg-elevated px-3 py-2 text-xs font-medium text-text hover:bg-bg-hover transition-colors"
           >
-            <span>🧭</span> Take a Tour of Frederick County
+            <Compass className="h-3.5 w-3.5 text-accent" strokeWidth={2} />
+            Take a tour of Frederick County
           </button>
         )}
         <div className="text-center text-[11px] leading-snug text-text-muted">
@@ -102,14 +120,16 @@ export function Sidebar({ onOpenPanel, onStartTour }: Props) {
   );
 }
 
-function QuickAction({ icon, label, onClick }: { icon: string; label: string; onClick: () => void }) {
+function QuickAction({ Icon, label, onClick }: { Icon: LucideIcon; label: string; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="flex flex-col items-center gap-1 rounded-lg p-2 text-center hover:bg-bg-hover transition-colors"
+      className="group flex flex-col items-center gap-1.5 rounded-lg p-2 text-center hover:bg-bg-hover transition-colors"
     >
-      <span className="text-lg">{icon}</span>
-      <span className="text-[10px] text-text-muted">{label}</span>
+      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-bg-surface text-text-secondary group-hover:bg-accent-subtle group-hover:text-accent transition-colors">
+        <Icon className="h-4 w-4" strokeWidth={1.75} />
+      </span>
+      <span className="text-[11px] font-medium text-text-secondary">{label}</span>
     </button>
   );
 }
