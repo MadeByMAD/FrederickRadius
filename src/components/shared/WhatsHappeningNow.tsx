@@ -1,5 +1,6 @@
 import { useState, type ComponentType } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import {
   AlertTriangle,
   Beer,
@@ -17,6 +18,7 @@ import {
 import { useWeather } from '../../hooks/useWeather';
 import { getWeatherEmoji } from '../../services/api/weather';
 import { useAppState } from '../../hooks/useAppState';
+import { routes } from '../../hooks/useAppRoute';
 import { staggerContainer, staggerItem } from '../../lib/motion';
 import { municipalities } from '../../data/municipalities';
 
@@ -49,6 +51,7 @@ export function WhatsHappeningNow() {
   const timeOfDay = getTimeOfDay();
   const { forecast, alerts } = useWeather();
   const { dispatch } = useAppState();
+  const navigate = useNavigate();
   const current = forecast[0];
   const [randomMuni] = useState(() =>
     municipalities[Math.floor(Math.random() * municipalities.length)]
@@ -60,33 +63,33 @@ export function WhatsHappeningNow() {
   if (timeOfDay === 'morning') {
     suggestions.push(
       { Icon: Coffee, title: 'Morning coffee spots', subtitle: 'Cafes & bakeries nearby', action: () => dispatch({ type: 'TOGGLE_LAYER', layerId: 'farmers-markets' }), color: 'var(--color-warning)' },
-      { Icon: CloudSun, title: "Today's forecast", subtitle: current ? `${current.temperature}° ${current.shortForecast}` : 'Loading...', action: () => dispatch({ type: 'OPEN_PANEL', content: 'weather' }), color: 'var(--color-info)' },
+      { Icon: CloudSun, title: "Today's forecast", subtitle: current ? `${current.temperature}° ${current.shortForecast}` : 'Loading...', action: () => navigate(routes.data('weather')), color: 'var(--color-info)' },
     );
   } else if (timeOfDay === 'afternoon') {
     suggestions.push(
       { Icon: Trees, title: 'Explore nearby parks', subtitle: '618+ miles of trails', action: () => dispatch({ type: 'TOGGLE_LAYER', layerId: 'parks' }), color: 'var(--color-success)' },
-      { Icon: TrafficCone, title: 'Traffic conditions', subtitle: 'Live CHART incidents', action: () => dispatch({ type: 'OPEN_PANEL', content: 'traffic' }), color: 'var(--color-warning)' },
+      { Icon: TrafficCone, title: 'Traffic conditions', subtitle: 'Live CHART incidents', action: () => navigate(routes.data('traffic')), color: 'var(--color-warning)' },
     );
   } else if (timeOfDay === 'evening') {
     suggestions.push(
       { Icon: Beer, title: 'Dinner & drinks', subtitle: 'Restaurants with liquor licenses', action: () => dispatch({ type: 'TOGGLE_LAYER', layerId: 'liquor' }), color: 'var(--color-gold)' },
-      { Icon: Landmark, title: 'Civic meetings tonight', subtitle: 'Council, planning, appeals', action: () => dispatch({ type: 'OPEN_PANEL', content: 'civic' }), color: 'var(--color-accent)' },
+      { Icon: Landmark, title: 'Civic meetings tonight', subtitle: 'Council, planning, appeals', action: () => navigate(routes.data('civic')), color: 'var(--color-accent)' },
     );
   } else {
     suggestions.push(
-      { Icon: Droplets, title: 'Stream levels', subtitle: '9 USGS gauges active', action: () => dispatch({ type: 'OPEN_PANEL', content: 'water' }), color: 'var(--color-info)' },
+      { Icon: Droplets, title: 'Stream levels', subtitle: '9 USGS gauges active', action: () => navigate(routes.data('water')), color: 'var(--color-info)' },
       { Icon: ShieldAlert, title: 'Safety resources', subtitle: 'Fire, police, shelters', action: () => dispatch({ type: 'TOGGLE_LAYER', layerId: 'fire-stations' }), color: 'var(--color-danger)' },
     );
   }
 
   // Always-relevant suggestions
   suggestions.push(
-    { Icon: Megaphone, title: '311 service requests', subtitle: "What's being reported", action: () => dispatch({ type: 'OPEN_PANEL', content: 'reports' }), color: 'var(--color-danger)' },
+    { Icon: Megaphone, title: '311 service requests', subtitle: "What's being reported", action: () => navigate(routes.data('reports')), color: 'var(--color-danger)' },
     {
       Icon: MapPin,
       title: `Explore ${randomMuni.name.replace(/^(City of |Town of |Village of )/, '')}`,
       subtitle: `Pop. ${randomMuni.population.toLocaleString()}`,
-      action: () => dispatch({ type: 'SELECT_MUNICIPALITY', id: randomMuni.id }),
+      action: () => navigate(routes.municipality(randomMuni.id)),
       color: 'var(--color-accent)',
     },
   );

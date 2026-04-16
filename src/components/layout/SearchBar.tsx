@@ -1,15 +1,16 @@
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useSearch } from '../../hooks/useSearch';
-import { useAppState } from '../../hooks/useAppState';
 import { useMapFlyTo } from '../../hooks/useMapFlyTo';
+import { routes } from '../../hooks/useAppRoute';
 import { municipalities } from '../../data/municipalities';
 
 export function SearchBar() {
   const [query, setQuery] = useState('');
   const [showResults, setShowResults] = useState(false);
   const { results, loading, search } = useSearch();
-  const { dispatch } = useAppState();
   const { flyTo: mapFlyTo } = useMapFlyTo();
+  const navigate = useNavigate();
   const wrapperRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
@@ -39,19 +40,15 @@ export function SearchBar() {
   function handleSelect(lat: string, lon: string, name: string) {
     setShowResults(false);
     setQuery(name.split(',')[0]);
-    mapFlyTo(parseFloat(lon), parseFloat(lat), 15);
-    // Trigger Address Intelligence
-    dispatch({
-      type: 'ADDRESS_INTEL',
-      lat: parseFloat(lat),
-      lng: parseFloat(lon),
-      address: name,
-    });
+    const lng = parseFloat(lon);
+    const latN = parseFloat(lat);
+    mapFlyTo(lng, latN, 15);
+    navigate(routes.address(lng, latN, name));
   }
 
   function handleMunicipalitySelect(id: string) {
     setShowResults(false);
-    dispatch({ type: 'SELECT_MUNICIPALITY', id });
+    navigate(routes.municipality(id));
   }
 
   // Filter municipalities by query

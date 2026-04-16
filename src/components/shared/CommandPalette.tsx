@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback, type ComponentType, type ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   BarChart3,
   CloudSun,
@@ -18,7 +19,7 @@ import { municipalities } from '../../data/municipalities';
 import { mapLayers, layerCategories } from '../../data/layers';
 import { useAppState } from '../../hooks/useAppState';
 import { useMapFlyTo } from '../../hooks/useMapFlyTo';
-import type { AppState } from '../../types';
+import { routes, useClosePanel, type PanelKind } from '../../hooks/useAppRoute';
 
 type LucideIcon = ComponentType<{ className?: string; strokeWidth?: number }>;
 
@@ -53,6 +54,8 @@ export function CommandPalette() {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const { dispatch } = useAppState();
+  const navigate = useNavigate();
+  const closePanel = useClosePanel();
   const { flyTo: mapFlyTo, resetView } = useMapFlyTo();
 
   // Build command list
@@ -67,13 +70,13 @@ export function CommandPalette() {
         description: `Pop. ${m.population.toLocaleString()} · ${m.area} mi²`,
         icon: <Glyph Icon={MapPin} />,
         category: 'Municipalities',
-        action: () => dispatch({ type: 'SELECT_MUNICIPALITY', id: m.id }),
+        action: () => navigate(routes.municipality(m.id)),
       });
     }
 
     // Panels
     const panels: Array<{
-      content: AppState['slidePanelContent'];
+      content: Exclude<PanelKind, 'municipality' | 'address-intel'>;
       label: string;
       Icon: LucideIcon;
       desc: string;
@@ -93,7 +96,7 @@ export function CommandPalette() {
         description: p.desc,
         icon: <Glyph Icon={p.Icon} />,
         category: 'Data Panels',
-        action: () => dispatch({ type: 'OPEN_PANEL', content: p.content }),
+        action: () => navigate(routes.data(p.content)),
       });
     }
 
@@ -130,7 +133,7 @@ export function CommandPalette() {
       category: 'Actions',
       action: () => {
         resetView();
-        dispatch({ type: 'CLOSE_PANEL' });
+        closePanel();
       },
     });
     cmds.push({
@@ -143,7 +146,7 @@ export function CommandPalette() {
     });
 
     return cmds;
-  }, [dispatch, mapFlyTo, resetView]);
+  }, [dispatch, mapFlyTo, resetView, navigate, closePanel]);
 
   // Filter
   const filtered = query.trim()

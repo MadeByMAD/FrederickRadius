@@ -107,12 +107,8 @@ export interface Representative {
 }
 
 export interface AppState {
-  selectedMunicipality: string | null;
   activeLayers: string[];
   sidebarOpen: boolean;
-  slidePanelOpen: boolean;
-  slidePanelContent: 'municipality' | 'search' | 'civic' | 'weather' | 'water' | 'traffic' | 'reports' | 'parking' | 'compare' | 'address-intel' | 'dashboard' | null;
-  addressIntel?: { lat: number; lng: number; address: string };
   searchQuery: string;
   layerOpacity: Record<string, number>;
   layerOrder: string[];

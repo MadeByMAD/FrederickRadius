@@ -1,19 +1,9 @@
-import type { ReactNode } from 'react';
 import { motion } from 'framer-motion';
-import { useAppState } from '../../hooks/useAppState';
+import { X } from 'lucide-react';
 import { slideInRight } from '../../lib/motion';
-import { MunicipalityProfile } from '../municipalities/MunicipalityProfile';
-import { MunicipalityCompare } from '../municipalities/MunicipalityCompare';
-import { WeatherPanel } from '../data-layers/WeatherPanel';
-import { WaterLevelsPanel } from '../data-layers/WaterLevelsPanel';
-import { TrafficPanel } from '../data-layers/TrafficPanel';
-import { ReportsPanel } from '../data-layers/ReportsPanel';
-import { CountyDashboard } from '../data-layers/CountyDashboard';
-import { ParkingPanel } from '../data-layers/ParkingPanel';
-import { MeetingCalendar } from '../civic/MeetingCalendar';
-import { RepresentativesPanel } from '../civic/RepresentativeCard';
-import { AddressIntelligencePanel } from '../shared/AddressIntelligencePanel';
+import { useClosePanel, type AppRoute } from '../../hooks/useAppRoute';
 import { ErrorBoundary } from '../shared/ErrorBoundary';
+import { PanelContent } from './AppShell';
 
 const PANEL_TITLES: Record<string, string> = {
   municipality: 'Municipality',
@@ -26,15 +16,13 @@ const PANEL_TITLES: Record<string, string> = {
   compare: 'Compare Municipalities',
   dashboard: 'County Dashboard',
   'address-intel': 'Address Intelligence',
-  search: 'Search Results',
 };
 
-export function SlidePanel() {
-  const { state, dispatch } = useAppState();
+export function SlidePanel({ route }: { route: AppRoute }) {
+  const closePanel = useClosePanel();
+  if (!route.panel) return null;
 
-  if (!state.slidePanelOpen || !state.slidePanelContent) return null;
-
-  const title = PANEL_TITLES[state.slidePanelContent] || 'Details';
+  const title = PANEL_TITLES[route.panel] ?? 'Details';
 
   return (
     <motion.div
@@ -42,74 +30,24 @@ export function SlidePanel() {
       initial="initial"
       animate="animate"
       exit="exit"
-      className="flex h-full w-96 flex-shrink-0 flex-col border-l border-border bg-bg">
+      className="flex h-full w-96 flex-shrink-0 flex-col border-l border-border bg-bg shadow-[var(--shadow-surface-2)]"
+    >
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
-        <h2 className="text-sm font-semibold text-text">{title}</h2>
+        <h2 className="font-display text-base font-semibold text-text">{title}</h2>
         <button
-          onClick={() => dispatch({ type: 'CLOSE_PANEL' })}
+          onClick={closePanel}
           className="rounded p-1 text-text-muted hover:bg-bg-hover hover:text-text transition-colors"
+          aria-label="Close panel"
         >
-          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          <X className="h-5 w-5" strokeWidth={2} />
         </button>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4">
         <ErrorBoundary>
-          <PanelContent type={state.slidePanelContent} />
+          <PanelContent route={route} />
         </ErrorBoundary>
       </div>
     </motion.div>
-  );
-}
-
-function PanelContent({ type }: { type: string }): ReactNode {
-  const { state } = useAppState();
-
-  switch (type) {
-    case 'municipality':
-      return <MunicipalityProfile />;
-    case 'weather':
-      return <WeatherPanel />;
-    case 'water':
-      return <WaterLevelsPanel />;
-    case 'traffic':
-      return <TrafficPanel />;
-    case 'reports':
-      return <ReportsPanel />;
-    case 'parking':
-      return <ParkingPanel />;
-    case 'civic':
-      return <CivicContent />;
-    case 'compare':
-      return <MunicipalityCompare />;
-    case 'dashboard':
-      return <CountyDashboard />;
-    case 'address-intel':
-      return state.addressIntel ? (
-        <AddressIntelligencePanel
-          lat={state.addressIntel.lat}
-          lng={state.addressIntel.lng}
-          address={state.addressIntel.address}
-        />
-      ) : <div className="text-sm text-text-secondary">Search for an address to see intelligence</div>;
-    default:
-      return <div className="text-sm text-text-secondary">Select an item to view details</div>;
-  }
-}
-
-function CivicContent() {
-  return (
-    <div className="space-y-6">
-      <div>
-        <h3 className="mb-3 text-sm font-semibold text-text">Upcoming Meetings</h3>
-        <MeetingCalendar />
-      </div>
-      <div>
-        <h3 className="mb-3 text-sm font-semibold text-text">Your Representatives</h3>
-        <RepresentativesPanel />
-      </div>
-    </div>
   );
 }

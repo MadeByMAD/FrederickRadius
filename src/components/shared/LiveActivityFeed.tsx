@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { fetch311Issues } from '../../services/api/seeclickfix';
 import { fetchTrafficIncidents } from '../../services/api/traffic';
-import { useAppState } from '../../hooks/useAppState';
 import { useMapFlyTo } from '../../hooks/useMapFlyTo';
+import { routes } from '../../hooks/useAppRoute';
 
 interface ActivityItem {
   id: string;
@@ -21,7 +22,7 @@ export function LiveActivityFeed() {
   const [visible, setVisible] = useState(false);
   const [loading, setLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { dispatch } = useAppState();
+  const navigate = useNavigate();
   const { flyTo: mapFlyTo } = useMapFlyTo();
 
   useEffect(() => {
@@ -83,8 +84,8 @@ export function LiveActivityFeed() {
     if (item.lat && item.lng) {
       mapFlyTo(item.lng, item.lat, 15);
     }
-    if (item.source === '311') dispatch({ type: 'OPEN_PANEL', content: 'reports' });
-    if (item.source === 'Traffic') dispatch({ type: 'OPEN_PANEL', content: 'traffic' });
+    if (item.source === '311') navigate(routes.data('reports'));
+    if (item.source === 'Traffic') navigate(routes.data('traffic'));
   }
 
   return (

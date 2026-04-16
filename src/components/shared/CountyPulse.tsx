@@ -1,4 +1,5 @@
 import { useState, useEffect, type ComponentType } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   AlertTriangle,
   ChevronDown,
@@ -10,7 +11,7 @@ import {
 import { useWeather } from '../../hooks/useWeather';
 import { useWaterLevels } from '../../hooks/useWaterLevels';
 import { getWeatherEmoji } from '../../services/api/weather';
-import { useAppState } from '../../hooks/useAppState';
+import { routes } from '../../hooks/useAppRoute';
 
 type LucideIcon = ComponentType<{ className?: string; strokeWidth?: number }>;
 
@@ -19,7 +20,7 @@ export function CountyPulse() {
   const [time, setTime] = useState(new Date());
   const { forecast, alerts } = useWeather();
   const { gauges } = useWaterLevels();
-  const { dispatch } = useAppState();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const interval = setInterval(() => setTime(new Date()), 30000);
@@ -86,28 +87,28 @@ export function CountyPulse() {
               label="Weather"
               value={current ? `${current.temperature}°${current.temperatureUnit}` : '...'}
               detail={current?.shortForecast || 'Loading...'}
-              onClick={() => { dispatch({ type: 'OPEN_PANEL', content: 'weather' }); setExpanded(false); }}
+              onClick={() => { navigate(routes.data('weather')); setExpanded(false); }}
             />
             <PulseCard
               Icon={Droplets}
               label="Avg Stream Level"
               value={avgGaugeHeight > 0 ? `${avgGaugeHeight.toFixed(1)} ft` : '...'}
               detail={`${gauges.length} active gauges`}
-              onClick={() => { dispatch({ type: 'OPEN_PANEL', content: 'water' }); setExpanded(false); }}
+              onClick={() => { navigate(routes.data('water')); setExpanded(false); }}
             />
             <PulseCard
               Icon={TrafficCone}
               label="Traffic"
               value="Live"
               detail="CHART incidents"
-              onClick={() => { dispatch({ type: 'OPEN_PANEL', content: 'traffic' }); setExpanded(false); }}
+              onClick={() => { navigate(routes.data('traffic')); setExpanded(false); }}
             />
             <PulseCard
               Icon={Megaphone}
               label="311 Reports"
               value="Active"
               detail="SeeClickFix issues"
-              onClick={() => { dispatch({ type: 'OPEN_PANEL', content: 'reports' }); setExpanded(false); }}
+              onClick={() => { navigate(routes.data('reports')); setExpanded(false); }}
             />
           </div>
 

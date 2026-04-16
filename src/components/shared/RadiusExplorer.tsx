@@ -1,9 +1,10 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Source, Layer, Marker } from 'react-map-gl/mapbox';
+import { useNavigate } from 'react-router-dom';
 import * as turf from '@turf/turf';
 import { municipalities } from '../../data/municipalities';
-import { useAppState } from '../../hooks/useAppState';
+import { routes } from '../../hooks/useAppRoute';
 
 interface Props {
   center: [number, number]; // [lng, lat]
@@ -12,7 +13,7 @@ interface Props {
 
 export function RadiusExplorer({ center, onClose }: Props) {
   const [radiusMiles, setRadiusMiles] = useState(3);
-  const { dispatch } = useAppState();
+  const navigate = useNavigate();
 
   // Generate circle GeoJSON
   const circleData = useMemo(() => {
@@ -139,7 +140,7 @@ export function RadiusExplorer({ center, onClose }: Props) {
               {nearbyMunis.map((m) => (
                 <button
                   key={m.id}
-                  onClick={() => dispatch({ type: 'SELECT_MUNICIPALITY', id: m.id })}
+                  onClick={() => navigate(routes.municipality(m.id))}
                   className="flex items-center justify-between w-full rounded-lg px-2.5 py-1.5 text-left hover:bg-bg-hover transition-colors"
                 >
                   <span className="text-xs text-text truncate">{m.name}</span>

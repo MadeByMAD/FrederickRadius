@@ -1,9 +1,10 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Map, { Source, Layer, Popup, NavigationControl, ScaleControl, GeolocateControl } from 'react-map-gl/mapbox';
+import { useNavigate } from 'react-router-dom';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { useAppState } from '../../hooks/useAppState';
 import { useTheme } from '../../hooks/useTheme';
 import { useMunicipalityBoundaries } from '../../hooks/useMunicipalityBoundaries';
+import { useAppRoute, routes } from '../../hooks/useAppRoute';
 import { municipalities } from '../../data/municipalities';
 import { FREDERICK_COUNTY_CENTER, FREDERICK_COUNTY_ZOOM } from '../../data/municipalities';
 import { GISLayerRenderer } from './GISLayerRenderer';
@@ -37,9 +38,10 @@ interface MapViewProps {
 }
 
 export function MapView({ radiusCenter, onCloseRadius }: MapViewProps = {}) {
-  const { state, dispatch } = useAppState();
   const { resolved: theme } = useTheme();
   const { data: muniData } = useMunicipalityBoundaries();
+  const route = useAppRoute();
+  const navigate = useNavigate();
   const [popup, setPopup] = useState<PopupInfo | null>(null);
   const [is3D, setIs3D] = useState(true);
   const [viewState, setViewState] = useState(INITIAL_VIEW);
@@ -51,48 +53,39 @@ export function MapView({ radiusCenter, onCloseRadius }: MapViewProps = {}) {
   const labelHalo = isDark ? 'rgba(15, 13, 11, 0.9)' : 'rgba(250, 248, 244, 0.9)';
   const buildingColor = isDark ? '#1A1A2E' : '#D9D2C4';
 
-  // Municipality click
+  // Municipality click → navigate to its URL
   const onMuniClick = useCallback(
     (e: MapMouseEvent) => {
       const feature = e.features?.[0];
       if (feature?.properties?.id) {
-        dispatch({ type: 'SELECT_MUNICIPALITY', id: feature.properties.id as string });
-        const muni = municipalities.find((m) => m.id === feature.properties!.id);
-        if (muni) {
-          setViewState((v) => ({
-            ...v,
-            longitude: muni.centroid[0],
-            latitude: muni.centroid[1],
-            zoom: muni.area > 5 ? 12 : 13.5,
-            pitch: 50,
-          }));
-        }
+        navigate(routes.municipality(feature.properties.id as string));
       }
     },
-    [dispatch]
+    [navigate]
   );
 
   // Right-click for Address Intelligence
   const onContextMenu = useCallback(
     (e: MapMouseEvent) => {
-      dispatch({
-        type: 'ADDRESS_INTEL',
-        lat: e.lngLat.lat,
-        lng: e.lngLat.lng,
-        address: `${e.lngLat.lat.toFixed(5)}, ${e.lngLat.lng.toFixed(5)} (Frederick County)`,
-      });
+      const q = `${e.lngLat.lat.toFixed(5)}, ${e.lngLat.lng.toFixed(5)} (Frederick County)`;
+      navigate(routes.address(e.lngLat.lng, e.lngLat.lat, q));
     },
-    [dispatch]
+    [navigate]
   );
 
-  // Fly to selected municipality
-  const selectedMuni = state.selectedMunicipality
-    ? municipalities.find((m) => m.id === state.selectedMunicipality)
-    : null;
-
-  if (selectedMuni && viewState.longitude !== selectedMuni.centroid[0]) {
-    // Will be handled by controlled viewState
-  }
+  // Fly the camera to the selected municipality whenever the URL changes.
+  useEffect(() => {
+    if (!route.municipalitySlug) return;
+    const muni = municipalities.find((m) => m.id === route.municipalitySlug);
+    if (!muni) return;
+    setViewState((v) => ({
+      ...v,
+      longitude: muni.centroid[0],
+      latitude: muni.centroid[1],
+      zoom: muni.area > 5 ? 12 : 13.5,
+      pitch: 50,
+    }));
+  }, [route.municipalitySlug]);
 
   return (
     <div className="relative h-full w-full">

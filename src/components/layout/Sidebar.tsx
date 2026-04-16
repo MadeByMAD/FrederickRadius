@@ -1,4 +1,5 @@
 import type { ComponentType } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   BarChart3,
   CloudSun,
@@ -13,6 +14,7 @@ import {
   X,
 } from 'lucide-react';
 import { useAppState } from '../../hooks/useAppState';
+import { useAppRoute, routes } from '../../hooks/useAppRoute';
 import { municipalities } from '../../data/municipalities';
 import { MunicipalityCard } from '../municipalities/MunicipalityCard';
 import { MapControls } from '../map/MapControls';
@@ -22,12 +24,13 @@ import { ThemeToggle } from '../shared/ThemeToggle';
 type LucideIcon = ComponentType<{ className?: string; strokeWidth?: number }>;
 
 interface Props {
-  onOpenPanel: (content: 'weather' | 'water' | 'civic' | 'traffic' | 'reports' | 'parking' | 'compare' | 'dashboard') => void;
   onStartTour?: () => void;
 }
 
-export function Sidebar({ onOpenPanel, onStartTour }: Props) {
-  const { state, dispatch } = useAppState();
+export function Sidebar({ onStartTour }: Props) {
+  const { dispatch } = useAppState();
+  const route = useAppRoute();
+  const navigate = useNavigate();
 
   return (
     <div className="flex h-full w-80 flex-shrink-0 flex-col border-r border-border bg-bg lg:w-[340px]">
@@ -57,14 +60,14 @@ export function Sidebar({ onOpenPanel, onStartTour }: Props) {
       {/* Quick Actions */}
       <div className="flex-shrink-0 border-b border-border p-3">
         <div className="grid grid-cols-3 gap-1.5">
-          <QuickAction Icon={CloudSun} label="Weather" onClick={() => onOpenPanel('weather')} />
-          <QuickAction Icon={Droplets} label="Water" onClick={() => onOpenPanel('water')} />
-          <QuickAction Icon={TrafficCone} label="Traffic" onClick={() => onOpenPanel('traffic')} />
-          <QuickAction Icon={Landmark} label="Civic" onClick={() => onOpenPanel('civic')} />
-          <QuickAction Icon={Megaphone} label="311" onClick={() => onOpenPanel('reports')} />
-          <QuickAction Icon={SquareParking} label="Parking" onClick={() => onOpenPanel('parking')} />
-          <QuickAction Icon={GitCompareArrows} label="Compare" onClick={() => onOpenPanel('compare')} />
-          <QuickAction Icon={BarChart3} label="Dashboard" onClick={() => onOpenPanel('dashboard')} />
+          <QuickAction Icon={CloudSun} label="Weather" onClick={() => navigate(routes.data('weather'))} />
+          <QuickAction Icon={Droplets} label="Water" onClick={() => navigate(routes.data('water'))} />
+          <QuickAction Icon={TrafficCone} label="Traffic" onClick={() => navigate(routes.data('traffic'))} />
+          <QuickAction Icon={Landmark} label="Civic" onClick={() => navigate(routes.data('civic'))} />
+          <QuickAction Icon={Megaphone} label="311" onClick={() => navigate(routes.data('reports'))} />
+          <QuickAction Icon={SquareParking} label="Parking" onClick={() => navigate(routes.data('parking'))} />
+          <QuickAction Icon={GitCompareArrows} label="Compare" onClick={() => navigate(routes.data('compare'))} />
+          <QuickAction Icon={BarChart3} label="Dashboard" onClick={() => navigate(routes.data('dashboard'))} />
           <QuickAction
             Icon={Layers}
             label="Layers"
@@ -88,8 +91,8 @@ export function Sidebar({ onOpenPanel, onStartTour }: Props) {
               <MunicipalityCard
                 key={m.id}
                 municipality={m}
-                isSelected={state.selectedMunicipality === m.id}
-                onSelect={(id) => dispatch({ type: 'SELECT_MUNICIPALITY', id })}
+                isSelected={route.municipalitySlug === m.id}
+                onSelect={(id) => navigate(routes.municipality(id))}
               />
             ))}
           </div>

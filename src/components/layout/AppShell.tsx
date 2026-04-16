@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
   BarChart3,
@@ -11,6 +12,7 @@ import {
   Search,
 } from 'lucide-react';
 import { useAppState } from '../../hooks/useAppState';
+import { useAppRoute, useClosePanel, routes } from '../../hooks/useAppRoute';
 import { MapView } from '../map/MapView';
 import { Sidebar } from './Sidebar';
 import { SlidePanel } from './SlidePanel';
@@ -41,6 +43,7 @@ import { WhatsHappeningNow } from '../shared/WhatsHappeningNow';
 import { WidgetStrip } from '../shared/WidgetStrip';
 import { ErrorBoundary } from '../shared/ErrorBoundary';
 import { ThemeToggle } from '../shared/ThemeToggle';
+import type { AppRoute } from '../../hooks/useAppRoute';
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(
@@ -57,22 +60,19 @@ function useIsMobile() {
 
 export function AppShell() {
   const { state, dispatch } = useAppState();
+  const route = useAppRoute();
+  const navigate = useNavigate();
+  const closePanel = useClosePanel();
   const isMobile = useIsMobile();
   const [showWelcome, setShowWelcome] = useState(() => !sessionStorage.getItem('fr-welcomed'));
   const [showTour, setShowTour] = useState(false);
   const [bottomSheetSnap, setBottomSheetSnap] = useState<SnapPoint>('peek');
   const [radiusCenter, setRadiusCenter] = useState<[number, number] | null>(null);
 
-  const handleOpenPanel = (content: 'weather' | 'water' | 'civic' | 'traffic' | 'reports' | 'parking' | 'compare' | 'dashboard') => {
-    dispatch({ type: 'OPEN_PANEL', content });
-    if (isMobile) setBottomSheetSnap('full');
-  };
-
+  // When a panel route opens on mobile, expand the bottom sheet.
   useEffect(() => {
-    if (state.selectedMunicipality && isMobile) {
-      setBottomSheetSnap('full');
-    }
-  }, [state.selectedMunicipality, isMobile]);
+    if (route.panel && isMobile) setBottomSheetSnap('full');
+  }, [route.panel, isMobile]);
 
   // Enter key skips welcome
   useEffect(() => {
@@ -127,28 +127,26 @@ export function AppShell() {
           }
         >
           {/* Sheet scrollable content */}
-          {state.slidePanelContent ? (
+          {route.panel ? (
             <div>
-              {/* Back button */}
               <button
-                onClick={() => { dispatch({ type: 'CLOSE_PANEL' }); setBottomSheetSnap('half'); }}
+                onClick={() => { closePanel(); setBottomSheetSnap('half'); }}
                 className="inline-flex items-center gap-1.5 text-xs font-medium text-accent mb-3 py-1 hover:text-accent-hover transition-colors"
               >
                 <ArrowLeft className="h-3.5 w-3.5" strokeWidth={2} />
                 Back
               </button>
               <ErrorBoundary>
-                <MobilePanelContent type={state.slidePanelContent} addressIntel={state.addressIntel} />
+                <PanelContent route={route} />
               </ErrorBoundary>
             </div>
           ) : (
             <div className="space-y-4">
-              {/* What's Happening Now — time-aware smart feed */}
               <WhatsHappeningNow />
 
               {/* County stats quick access */}
               <button
-                onClick={() => handleOpenPanel('dashboard')}
+                onClick={() => navigate(routes.data('dashboard'))}
                 className="w-full rounded-xl border border-border bg-bg-elevated p-3 text-left shadow-[var(--shadow-surface-1)] hover:bg-bg-hover transition-colors"
               >
                 <div className="flex items-center justify-between gap-3">
@@ -170,7 +168,7 @@ export function AppShell() {
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
                   Municipalities
                 </h3>
-                <button onClick={() => handleOpenPanel('compare')} className="text-[10px] text-accent">
+                <button onClick={() => navigate(routes.data('compare'))} className="text-xs font-medium text-accent">
                   Compare
                 </button>
               </div>
@@ -178,8 +176,8 @@ export function AppShell() {
                 <MunicipalityCard
                   key={m.id}
                   municipality={m}
-                  isSelected={state.selectedMunicipality === m.id}
-                  onSelect={(id) => dispatch({ type: 'SELECT_MUNICIPALITY', id })}
+                  isSelected={route.municipalitySlug === m.id}
+                  onSelect={(id) => navigate(routes.municipality(id))}
                 />
               ))}
               <button
@@ -202,11 +200,11 @@ export function AppShell() {
   }
 
   // ── DESKTOP LAYOUT ──
+  const slidePanelOpen = route.panel !== null;
   return (
     <div className="flex h-full">
       <CommandPalette />
 
-      {/* Mobile sidebar toggle (hidden on desktop, but kept for tablet) */}
       {!state.sidebarOpen && (
         <button
           onClick={() => dispatch({ type: 'TOGGLE_SIDEBAR' })}
@@ -217,15 +215,10 @@ export function AppShell() {
         </button>
       )}
 
-      {/* Sidebar */}
       {state.sidebarOpen && (
-        <Sidebar
-          onOpenPanel={handleOpenPanel}
-          onStartTour={() => setShowTour(true)}
-        />
+        <Sidebar onStartTour={() => setShowTour(true)} />
       )}
 
-      {/* Map */}
       <div className="relative flex-1 min-w-0">
         <ErrorBoundary fallback={<MapErrorFallback />}>
           <MapView radiusCenter={radiusCenter} onCloseRadius={() => setRadiusCenter(null)} />
@@ -259,18 +252,12 @@ export function AppShell() {
         </div>
       </div>
 
-      {/* Layer Panel (desktop only) */}
       <AnimatePresence>
-        {state.layerPanelOpen && !state.slidePanelOpen && (
-          <LayerPanel />
-        )}
+        {state.layerPanelOpen && !slidePanelOpen && <LayerPanel />}
       </AnimatePresence>
 
-      {/* Slide Panel (desktop only) */}
       <AnimatePresence>
-        {state.slidePanelOpen && (
-          <SlidePanel />
-        )}
+        {slidePanelOpen && <SlidePanel route={route} />}
       </AnimatePresence>
     </div>
   );
@@ -295,28 +282,40 @@ function MapErrorFallback() {
   );
 }
 
-function MobilePanelContent({ type, addressIntel }: {
-  type: string;
-  addressIntel?: { lat: number; lng: number; address: string };
-}) {
-  switch (type) {
-    case 'municipality': return <MunicipalityProfile />;
-    case 'weather': return <WeatherPanel />;
-    case 'water': return <WaterLevelsPanel />;
-    case 'traffic': return <TrafficPanel />;
-    case 'reports': return <ReportsPanel />;
-    case 'parking': return <ParkingPanel />;
-    case 'compare': return <MunicipalityCompare />;
-    case 'dashboard': return <CountyDashboard />;
-    case 'civic': return (
-      <div className="space-y-6">
-        <div><h3 className="mb-3 text-sm font-semibold text-text">Upcoming Meetings</h3><MeetingCalendar /></div>
-        <div><h3 className="mb-3 text-sm font-semibold text-text">Representatives</h3><RepresentativesPanel /></div>
-      </div>
-    );
-    case 'address-intel': return addressIntel ? (
-      <AddressIntelligencePanel lat={addressIntel.lat} lng={addressIntel.lng} address={addressIntel.address} />
-    ) : null;
-    default: return null;
+export function PanelContent({ route }: { route: AppRoute }) {
+  switch (route.panel) {
+    case 'municipality':
+      return <MunicipalityProfile slug={route.municipalitySlug} />;
+    case 'weather':
+      return <WeatherPanel />;
+    case 'water':
+      return <WaterLevelsPanel />;
+    case 'traffic':
+      return <TrafficPanel />;
+    case 'reports':
+      return <ReportsPanel />;
+    case 'parking':
+      return <ParkingPanel />;
+    case 'compare':
+      return <MunicipalityCompare />;
+    case 'dashboard':
+      return <CountyDashboard />;
+    case 'civic':
+      return (
+        <div className="space-y-6">
+          <div><h3 className="mb-3 text-sm font-semibold text-text">Upcoming Meetings</h3><MeetingCalendar /></div>
+          <div><h3 className="mb-3 text-sm font-semibold text-text">Representatives</h3><RepresentativesPanel /></div>
+        </div>
+      );
+    case 'address-intel':
+      return route.address ? (
+        <AddressIntelligencePanel
+          lat={route.address.lat}
+          lng={route.address.lng}
+          address={route.address.addressText}
+        />
+      ) : null;
+    default:
+      return null;
   }
 }

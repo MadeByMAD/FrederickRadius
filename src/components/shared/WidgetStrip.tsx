@@ -1,11 +1,13 @@
 import { useState, useMemo, type ComponentType, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { AlertTriangle, Droplets, Landmark, Sunrise, UtensilsCrossed } from 'lucide-react';
 import { useWeather } from '../../hooks/useWeather';
 import { useWaterLevels } from '../../hooks/useWaterLevels';
 import { getWeatherEmoji } from '../../services/api/weather';
 import { getWaterLevelStatus } from '../../services/api/water';
 import { useAppState } from '../../hooks/useAppState';
+import { routes } from '../../hooks/useAppRoute';
 import { upcomingMeetings } from '../../data/civic';
 
 type LucideIcon = ComponentType<{ className?: string; strokeWidth?: number }>;
@@ -28,6 +30,7 @@ export function WidgetStrip() {
   const { forecast, alerts } = useWeather();
   const { gauges } = useWaterLevels();
   const { dispatch } = useAppState();
+  const navigate = useNavigate();
   const [now] = useState(() => new Date());
 
   const widgets = useMemo<Widget[]>(() => {
@@ -43,7 +46,7 @@ export function WidgetStrip() {
         value: `${current.temperature}°${current.temperatureUnit}`,
         detail: current.shortForecast,
         color: 'var(--color-info)',
-        onClick: () => dispatch({ type: 'OPEN_PANEL', content: 'weather' }),
+        onClick: () => navigate(routes.data('weather')),
       });
     }
 
@@ -56,7 +59,7 @@ export function WidgetStrip() {
         value: alerts[0].event,
         detail: 'Active weather alert',
         color: 'var(--color-warning)',
-        onClick: () => dispatch({ type: 'OPEN_PANEL', content: 'weather' }),
+        onClick: () => navigate(routes.data('weather')),
       });
     }
 
@@ -75,7 +78,7 @@ export function WidgetStrip() {
         value: nextMeeting.title.replace('County Council ', '').replace(' Session', ''),
         detail: `${nextMeeting.time} · ${meetDate.toLocaleDateString('en-US', { weekday: 'short' })}`,
         color: 'var(--color-accent)',
-        onClick: () => dispatch({ type: 'OPEN_PANEL', content: 'civic' }),
+        onClick: () => navigate(routes.data('civic')),
       });
     }
 
@@ -97,7 +100,7 @@ export function WidgetStrip() {
           value: `${withHeight.height.toFixed(1)} ft`,
           detail: withHeight.name.split(' at ')[0] || 'Stream gauge',
           color: status.color,
-          onClick: () => dispatch({ type: 'OPEN_PANEL', content: 'water' }),
+          onClick: () => navigate(routes.data('water')),
         });
       }
     }

@@ -1,9 +1,7 @@
 import { municipalities } from '../../data/municipalities';
-import { useAppState } from '../../hooks/useAppState';
 
-export function MunicipalityProfile() {
-  const { state } = useAppState();
-  const muni = municipalities.find((m) => m.id === state.selectedMunicipality);
+export function MunicipalityProfile({ slug }: { slug?: string | null }) {
+  const muni = municipalities.find((m) => m.id === slug);
   if (!muni) return null;
 
   return (
