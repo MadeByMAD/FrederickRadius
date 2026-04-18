@@ -1,3 +1,4 @@
+import { classifyMunicipality, stripTitlePrefix } from '../../lib/municipalityStyle';
 import type { Municipality } from '../../types';
 
 interface Props {
@@ -7,24 +8,44 @@ interface Props {
 }
 
 export function MunicipalityCard({ municipality: m, isSelected, onSelect }: Props) {
+  const style = classifyMunicipality(m);
   return (
     <button
       onClick={() => onSelect(m.id)}
-      className={`w-full rounded-lg border p-3 text-left transition-all ${
-        isSelected
-          ? 'border-accent bg-accent/10'
-          : 'border-border bg-bg-surface hover:border-border hover:bg-bg-hover'
+      aria-pressed={isSelected}
+      className={`group relative w-full overflow-hidden rounded-xl border bg-bg-elevated text-left shadow-[var(--shadow-surface-1)] transition-all hover:-translate-y-[1px] hover:shadow-[var(--shadow-surface-2)] ${
+        isSelected ? 'border-accent ring-2 ring-accent/20' : 'border-border'
       }`}
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <h4 className="truncate text-sm font-medium text-text">{m.name}</h4>
-          <p className="mt-0.5 text-xs text-text-secondary">
-            Pop. {m.population.toLocaleString()} &middot; {m.area} mi²
-          </p>
+      <div
+        className="h-1.5 w-full"
+        style={{ background: style.gradient }}
+        aria-hidden
+      />
+
+      <div className="p-3">
+        <div className="flex items-center gap-2">
+          <span
+            className="inline-flex h-4 items-center rounded-full px-1.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-white"
+            style={{ background: style.accent }}
+          >
+            {style.classification}
+          </span>
+          <span className="text-[10px] text-text-muted tabular-nums">
+            Pop. {m.population.toLocaleString()}
+          </span>
         </div>
-        <div className="flex-shrink-0 rounded bg-bg-elevated px-1.5 py-0.5 text-xs text-accent">
-          ${(m.medianIncome / 1000).toFixed(0)}k
+
+        <h4 className="mt-1 font-display text-base font-semibold leading-tight tracking-tight text-text">
+          {stripTitlePrefix(m.name)}
+        </h4>
+
+        <div className="mt-1.5 flex items-center gap-3 text-[11px] text-text-muted tabular-nums">
+          <span>{m.area} mi²</span>
+          <span aria-hidden>·</span>
+          <span>${Math.round(m.medianIncome / 1000)}k median</span>
+          <span aria-hidden>·</span>
+          <span>age {m.medianAge.toFixed(1)}</span>
         </div>
       </div>
     </button>

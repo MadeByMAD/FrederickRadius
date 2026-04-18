@@ -1,59 +1,128 @@
+import { motion } from 'framer-motion';
+import { ExternalLink } from 'lucide-react';
 import { municipalities } from '../../data/municipalities';
+import {
+  classifyMunicipality,
+  personInitials,
+  stripTitlePrefix,
+} from '../../lib/municipalityStyle';
+import { fadeUp, staggerContainer, staggerItem } from '../../lib/motion';
 
 export function MunicipalityProfile({ slug }: { slug?: string | null }) {
   const muni = municipalities.find((m) => m.id === slug);
   if (!muni) return null;
 
+  const style = classifyMunicipality(muni);
+
   return (
-    <div className="space-y-4">
-      <div>
-        <h2 className="text-lg font-semibold text-text">{muni.name}</h2>
-        <p className="mt-1 text-sm text-text-secondary">{muni.description}</p>
-      </div>
-
-      <div className="grid grid-cols-2 gap-2">
-        <StatBox label="Population" value={muni.population.toLocaleString()} />
-        <StatBox label="Area" value={`${muni.area} mi²`} />
-        <StatBox label="Median Income" value={`$${muni.medianIncome.toLocaleString()}`} />
-        <StatBox label="Median Age" value={muni.medianAge.toString()} />
-      </div>
-
-      {muni.officials && muni.officials.length > 0 && (
-        <div>
-          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-secondary">Officials</h3>
-          <div className="space-y-1.5">
-            {muni.officials.map((o, i) => (
-              <div key={i} className="flex items-center justify-between rounded bg-bg-elevated px-3 py-2">
-                <span className="text-sm text-text">{o.name}</span>
-                <span className="text-xs text-text-muted">{o.title}</span>
-              </div>
-            ))}
+    <motion.div variants={fadeUp} initial="initial" animate="animate" className="space-y-5">
+      {/* Hero */}
+      <div
+        className="relative -mx-4 -mt-4 h-40 overflow-hidden"
+        style={{ background: style.gradient }}
+      >
+        <HeroRings />
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/35 via-black/10 to-transparent p-4">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/90">
+            {style.classification} · Frederick County, MD
           </div>
+          <h2 className="mt-1 font-display text-3xl font-semibold leading-none tracking-tight text-white drop-shadow-sm">
+            {stripTitlePrefix(muni.name)}
+          </h2>
         </div>
+      </div>
+
+      <p className="text-sm leading-relaxed text-text-secondary">{muni.description}</p>
+
+      {/* Stats grid */}
+      <motion.dl
+        variants={staggerContainer}
+        initial="initial"
+        animate="animate"
+        className="grid grid-cols-2 gap-2"
+      >
+        <Stat label="Population" value={muni.population.toLocaleString()} detail="residents" />
+        <Stat label="Area" value={`${muni.area}`} detail="square miles" />
+        <Stat
+          label="Median Income"
+          value={`$${Math.round(muni.medianIncome / 1000)}k`}
+          detail="household"
+        />
+        <Stat label="Median Age" value={muni.medianAge.toFixed(1)} detail="years" />
+      </motion.dl>
+
+      {/* Officials */}
+      {muni.officials && muni.officials.length > 0 && (
+        <section>
+          <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-text-secondary">
+            Officials
+          </h3>
+          <ul className="space-y-1.5">
+            {muni.officials.map((o, i) => (
+              <li
+                key={i}
+                className="flex items-center gap-3 rounded-lg border border-border bg-bg-elevated p-2.5 shadow-[var(--shadow-surface-1)]"
+              >
+                <span
+                  className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full font-display text-sm font-semibold text-white"
+                  style={{ background: style.accent }}
+                  aria-hidden
+                >
+                  {personInitials(o.name)}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-sm font-medium text-text">{o.name}</div>
+                  <div className="truncate text-[11px] text-text-muted">{o.title}</div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
 
+      {/* Website */}
       {muni.website && (
         <a
           href={muni.website}
           target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-2 rounded-lg border border-border bg-bg-surface px-3 py-2 text-sm text-accent hover:bg-bg-hover transition-colors"
+          rel="noreferrer"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-border bg-bg-elevated px-4 py-2.5 text-sm font-medium text-text shadow-[var(--shadow-surface-1)] hover:bg-bg-hover transition-colors"
         >
-          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-          </svg>
-          Official Website
+          Visit the official site
+          <ExternalLink className="h-3.5 w-3.5" strokeWidth={2} />
         </a>
       )}
-    </div>
+    </motion.div>
   );
 }
 
-function StatBox({ label, value }: { label: string; value: string }) {
+function Stat({ label, value, detail }: { label: string; value: string; detail?: string }) {
   return (
-    <div className="rounded-lg bg-bg-elevated p-2.5">
-      <div className="text-xs text-text-muted">{label}</div>
-      <div className="mt-0.5 text-base font-semibold text-text">{value}</div>
-    </div>
+    <motion.div
+      variants={staggerItem}
+      className="rounded-xl border border-border bg-bg-elevated p-3 shadow-[var(--shadow-surface-1)]"
+    >
+      <dt className="text-[10px] uppercase tracking-wider text-text-muted">{label}</dt>
+      <dd className="mt-1 font-display text-xl font-semibold tabular-nums leading-none text-text">
+        {value}
+      </dd>
+      {detail && <div className="mt-1 text-[11px] text-text-muted">{detail}</div>}
+    </motion.div>
+  );
+}
+
+function HeroRings() {
+  return (
+    <svg
+      className="absolute -right-10 -top-10 h-56 w-56 text-white/15"
+      viewBox="0 0 100 100"
+      fill="none"
+      aria-hidden
+    >
+      <circle cx="50" cy="50" r="48" stroke="currentColor" strokeWidth="0.8" />
+      <circle cx="50" cy="50" r="36" stroke="currentColor" strokeWidth="0.6" strokeDasharray="2 3" />
+      <circle cx="50" cy="50" r="24" stroke="currentColor" strokeWidth="0.6" />
+      <circle cx="50" cy="50" r="12" stroke="currentColor" strokeWidth="0.6" strokeDasharray="1 2" />
+    </svg>
   );
 }

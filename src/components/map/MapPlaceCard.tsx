@@ -1,6 +1,6 @@
 import { ArrowRight, Globe, X } from 'lucide-react';
 import { municipalities } from '../../data/municipalities';
-import type { Municipality } from '../../types';
+import { classifyMunicipality, stripTitlePrefix } from '../../lib/municipalityStyle';
 
 interface Props {
   slug: string;
@@ -17,14 +17,14 @@ export function MapPlaceCard({ slug, onClose, onOpen }: Props) {
   const muni = municipalities.find((m) => m.id === slug);
   if (!muni) return null;
 
-  const classification = classifyMunicipality(muni);
+  const style = classifyMunicipality(muni);
 
   return (
     <div className="w-[300px] overflow-hidden rounded-2xl border border-border bg-bg-elevated shadow-[var(--shadow-surface-3)]">
       {/* Hero band — color keyed to classification, with a subtle ring motif */}
       <div
         className="relative h-16 overflow-hidden"
-        style={{ background: classification.gradient }}
+        style={{ background: style.gradient }}
       >
         <RingMotif />
         <button
@@ -36,13 +36,13 @@ export function MapPlaceCard({ slug, onClose, onOpen }: Props) {
           <X className="h-3.5 w-3.5" strokeWidth={2} />
         </button>
         <div className="absolute left-3 bottom-1.5 text-[10px] font-medium uppercase tracking-[0.18em] text-white/95 drop-shadow-sm">
-          {classification.label} · Frederick County
+          {style.classification} · Frederick County
         </div>
       </div>
 
       <div className="p-4">
         <h3 className="font-display text-2xl font-semibold leading-tight tracking-tight text-text">
-          {muni.name.replace(/^(City of |Town of |Village of )/, '')}
+          {stripTitlePrefix(muni.name)}
         </h3>
         <p className="mt-1 text-xs leading-relaxed text-text-muted line-clamp-2">
           {muni.description}
@@ -104,25 +104,6 @@ function RingMotif() {
       <circle cx="50" cy="50" r="18" stroke="currentColor" strokeWidth="1" />
     </svg>
   );
-}
-
-function classifyMunicipality(m: Municipality): { label: string; gradient: string } {
-  if (m.name.startsWith('City')) {
-    return {
-      label: 'City',
-      gradient: 'linear-gradient(135deg, #8B1F2F 0%, #B8374A 55%, #D4344A 100%)',
-    };
-  }
-  if (m.name.startsWith('Town')) {
-    return {
-      label: 'Town',
-      gradient: 'linear-gradient(135deg, #8C6310 0%, #B8860B 60%, #D5A334 100%)',
-    };
-  }
-  return {
-    label: 'Village',
-    gradient: 'linear-gradient(135deg, #2F5238 0%, #4C7A5A 60%, #6F9C7A 100%)',
-  };
 }
 
 function formatPopulation(n: number): string {
