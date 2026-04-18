@@ -154,6 +154,16 @@ body {
 }
 .mapboxgl-popup-tip { border-top-color: var(--color-bg-elevated) !important; }
 .mapboxgl-popup-close-button { color: var(--color-text-secondary) !important; font-size: 18px !important; }
+
+/* Custom place-card popup: render without Mapbox's default chrome. */
+.fr-place-popup .mapboxgl-popup-content {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+.fr-place-popup .mapboxgl-popup-tip { display: none !important; }
 .mapboxgl-ctrl-group {
   background: var(--color-bg-elevated) !important;
   border: 1px solid var(--color-border) !important;
